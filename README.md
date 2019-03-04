@@ -25,10 +25,6 @@ This means there are some verifications that can be transferred from run-time to
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:paragraph -->
-<p>A typed list also comes handy when you have a business logic somewhere, whereby there must be specific number of elements/things for the "logic" to be valid. </p>
-<!-- /wp:paragraph -->
-
 <!-- wp:jetpack/markdown {"source":"At the end the api should be something along:\n```\nval foo: TypedList[Int, Nat5] = 11 :: 20 :: 34 :: 49 :: 54 :: TypedNil\n\nfoo.split[Nat2]\n// res: (TypedList[Int, Nat2], TypedList[Int, Nat3]) = (TypedList(11, 20), TypedList(34, 49, 54) )\n\nfoo.get[Nat4]\n// res: Int = 49\n\nval bar: TypedList[Int, Nat2] = 1000 :: 2000 :: TypedNil\nfoo concat bar\n// res: TypedList[Int, Nat7] = TypedList(11, 20, 34, 49, 54, 1000, 2000)\n\nfoo.map(elem =\u003e s\u0022Foo-\u0022 + elem)\n// res: TypedList[String, Nat5] = TypedList(Foo-11,Foo-20,Foo-34,Foo-49,Foo-54)\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>At the end the api should be something along:</p>
 <pre><code>val foo: TypedList[Int, Nat5] = 11 :: 20 :: 34 :: 49 :: 54 :: TypedNil
@@ -53,15 +49,16 @@ foo.map(elem =&gt; s&quot;Foo-&quot; + elem)
 <h3>The Natural numbers</h3>
 <!-- /wp:heading -->
 
-<!-- wp:jetpack/markdown {"source":"As the size of the list, it being the number of elements it holds, can only be 0 or greater and since we want to parameterize a list on its size, then the 1st step is to encode the natural numbers at the type level; such that there is a type for every natural number. This will allow us to do something like:   \n```scala\nval foo: TypedList[String, Four] = \u0022Foo\u0022 :: \u0022Bar\u0022 :: \u0022Baz\u0022 :: \u0022Qux\u0022\n```"} -->
+<!-- wp:jetpack/markdown {"source":"As the size of the list, it being the number of elements it holds, can only be 0 or greater and since we want to parameterize a list on its size, then the 1st step is to encode the natural numbers at the type level; such that there is a type for every natural number. This will allow us to do something like:   \n```scala\nval foo: TypedList[String, Four] = \u0022Foo\u0022 :: \u0022Bar\u0022 :: \u0022Baz\u0022 :: \u0022Qux\u0022 :: TypedNil\n\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>As the size of the list, it being the number of elements it holds, can only be 0 or greater and since we want to parameterize a list on its size, then the 1st step is to encode the natural numbers at the type level; such that there is a type for every natural number. This will allow us to do something like:</p>
-<pre><code class="language-scala">val foo: TypedList[String, Four] = &quot;Foo&quot; :: &quot;Bar&quot; :: &quot;Baz&quot; :: &quot;Qux&quot;
+<pre><code class="language-scala">val foo: TypedList[String, Four] = &quot;Foo&quot; :: &quot;Bar&quot; :: &quot;Baz&quot; :: &quot;Qux&quot; :: TypedNil
+
 </code></pre>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"The following is a pivotal step of the whole process. The baseline was the encoding of natural numbers as presented here and here. It starts with:  \n```scala\nsealed trait Natural\n\ncase object Zero extends Natural\ncase class Suc[N \u003c: Natural]() extends Natural\n```\nThe following diagram captures the type hierarchy. "} -->
-<div class="wp-block-jetpack-markdown"><p>The following is a pivotal step of the whole process. The baseline was the encoding of natural numbers as presented here and here. It starts with:</p>
+<!-- wp:jetpack/markdown {"source":"The following is a pivotal step of the whole process. The baseline was the encoding of natural numbers as presented [here](#joe_barnes_talk) and [here](#yao_li). It starts with:  \n```scala\nsealed trait Natural\n\ncase object Zero extends Natural\ncase class Suc[N \u003c: Natural]() extends Natural\n```\nThe following diagram captures the type hierarchy. "} -->
+<div class="wp-block-jetpack-markdown"><p>The following is a pivotal step of the whole process. The baseline was the encoding of natural numbers as presented <a href="#joe_barnes_talk">here</a> and <a href="#yao_li">here</a>. It starts with:</p>
 <pre><code class="language-scala">sealed trait Natural
 
 case object Zero extends Natural
@@ -81,9 +78,10 @@ This infinite loop can only start at <code>Zero</code> as <code>Zero.type</code>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"Throughout the post we will be using aliases for the natural types:  \n```\ntype Nat0 = Zero.type  \ntype Nat1 = Suc[Nat0]\ntype Nat2 = Suc[Nat1]\ntype Nat3 = Suc[Nat2]  \n...\n```"} -->
+<!-- wp:jetpack/markdown {"source":"Throughout the post we will be using aliases for the natural types:  \n```  \n\ntype Nat0 = Zero.type  \ntype Nat1 = Suc[Nat0]\ntype Nat2 = Suc[Nat1]\ntype Nat3 = Suc[Nat2]  \n...\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>Throughout the post we will be using aliases for the natural types:</p>
-<pre><code>type Nat0 = Zero.type  
+<pre><code>
+type Nat0 = Zero.type  
 type Nat1 = Suc[Nat0]
 type Nat2 = Suc[Nat1]
 type Nat3 = Suc[Nat2]  
@@ -92,11 +90,12 @@ type Nat3 = Suc[Nat2]
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"This is cleaner and more intelligible than using `Suc[Suc[Suc[Suc[Suc[Suc[Suc[.....` to represent some number.     \nOne might wonder the advantage of using such a fancy formulation if we need to manually type every single number.   \nI simpler formulation would be just: \n```\nsealed trait Natural\ncase object Zero extends Natural\ncase object One extends Natural\ncase object Two extends Natural\ncase object Three extends Natural\n....\n```\nBut notice that in this formulation the numbers have no relation between themselves. \nWe would be unable to sum, subtract or multiply two numbers together as we will see further down. These operations with naturals being essential for a generic formulation. \n"} -->
+<!-- wp:jetpack/markdown {"source":"This is cleaner and more intelligible than using `Suc[Suc[Suc[Suc[Suc[Suc[Suc[.....` to represent some number.     \nOne might wonder the advantage of using such a fancy formulation if we need to manually type every single number.   \nI simpler formulation would be just: \n```  \n\nsealed trait Natural\ncase object Zero extends Natural\ncase object One extends Natural\ncase object Two extends Natural\ncase object Three extends Natural\n....\n```\nBut notice that in this formulation the numbers have no relation between themselves. \nWe would be unable to sum, subtract or multiply two numbers together as we will see further down. These operations with naturals being essential for a generic formulation. \n"} -->
 <div class="wp-block-jetpack-markdown"><p>This is cleaner and more intelligible than using <code>Suc[Suc[Suc[Suc[Suc[Suc[Suc[.....</code> to represent some number.<br>
 One might wonder the advantage of using such a fancy formulation if we need to manually type every single number.<br>
 I simpler formulation would be just:</p>
-<pre><code>sealed trait Natural
+<pre><code>
+sealed trait Natural
 case object Zero extends Natural
 case object One extends Natural
 case object Two extends Natural
@@ -112,12 +111,12 @@ We would be unable to sum, subtract or multiply two numbers together as we will 
 <h2>Raw signature of the TypedList</h2>
 <!-- /wp:heading -->
 
-<!-- wp:jetpack/markdown {"source":"With the above we now have:  \n```scala\nsealed trait TypedList[+Element, Size \u003c: Natural]\n```\n\nWhere we have co-variance with `Element` as in a normal list.  \nHaving co-variance on `Size` as well was my first approach, but it lead to an array of problems downstream. I settled with invariance as #here."} -->
+<!-- wp:jetpack/markdown {"source":"With the above we now have:  \n```scala\nsealed trait TypedList[+Element, Size \u003c: Natural]\n```\n\nWhere we have co-variance with `Element` as in a normal list.  \nHaving co-variance on `Size` as well was my first approach, but it lead to an array of problems downstream as seen on this SO [post](https://stackoverflow.com/questions/53708117/inference-of-underscore-types) . I settled with invariance as [Joe Barnes](#joe_barnes_talk) (minute 24:40).    "} -->
 <div class="wp-block-jetpack-markdown"><p>With the above we now have:</p>
 <pre><code class="language-scala">sealed trait TypedList[+Element, Size &lt;: Natural]
 </code></pre>
 <p>Where we have co-variance with <code>Element</code> as in a normal list.<br>
-Having co-variance on <code>Size</code> as well was my first approach, but it lead to an array of problems downstream. I settled with invariance as #here.</p>
+Having co-variance on <code>Size</code> as well was my first approach, but it lead to an array of problems downstream as seen on this SO <a href="https://stackoverflow.com/questions/53708117/inference-of-underscore-types">post</a> . I settled with invariance as <a href="#joe_barnes_talk">Joe Barnes</a> (minute 24:40).</p>
 </div>
 <!-- /wp:jetpack/markdown -->
 
@@ -139,8 +138,8 @@ case class TypedCons[Element, N &lt;: Natural](
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"The following is another fundamental concept:    \n`TypedCons[_, N]` extends `TypedList[_, Suc[N]]`.  \nWhy ?  \nWouldn't it be more intuitive to extend `TypedList[_, N]` instead ?  \nBecause the tail's size must be one less than the current list!  \nWith the current formulation, a `TypedCons[_, Nat4]` is a `TypedList[_, Nat5/*(= Suc[Nat4])*/]` with a tail of size `Nat4`. Very smart ! \nIf the extension was on `TypedList[_, N]` how would we encode that property?\n"} -->
-<div class="wp-block-jetpack-markdown"><p>The following is another fundamental concept:<br>
+<!-- wp:jetpack/markdown {"source":"The following is another **fundamental** concept:    \n`TypedCons[_, N]` extends `TypedList[_, Suc[N]]`.  \nWhy ?  \nWouldn't it be more intuitive to extend `TypedList[_, N]` instead ?  \nBecause the tail's size must be one less than the current list!  \nWith the current formulation, a `TypedCons[_, Nat4]` is a `TypedList[_, Nat5/*(= Suc[Nat4])*/]` with a tail of size `Nat4`. Very smart ! \nIf the extension was on `TypedList[_, N]` how would we encode that property?\n"} -->
+<div class="wp-block-jetpack-markdown"><p>The following is another <strong>fundamental</strong> concept:<br>
 <code>TypedCons[_, N]</code> extends <code>TypedList[_, Suc[N]]</code>.<br>
 Why ?<br>
 Wouldn't it be more intuitive to extend <code>TypedList[_, N]</code> instead ?<br>
@@ -150,9 +149,10 @@ If the extension was on <code>TypedList[_, N]</code> how would we encode that pr
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"Continuing, notice we are still able to access the head of an empty list:\n```scala\nval emptyList = TypedNil\nval foo = emptyList.head       // compiles and \njava.lang.Exception: Boom!     // blows-up at compile time\n```"} -->
+<!-- wp:jetpack/markdown {"source":"Continuing, notice we are still able to access the head of an empty list:\n```scala\n\nval emptyList = TypedNil\nval foo = emptyList.head       // compiles and \njava.lang.Exception: Boom!     // blows-up at compile time\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>Continuing, notice we are still able to access the head of an empty list:</p>
-<pre><code class="language-scala">val emptyList = TypedNil
+<pre><code class="language-scala">
+val emptyList = TypedNil
 val foo = emptyList.head       // compiles and 
 java.lang.Exception: Boom!     // blows-up at compile time
 </code></pre>
@@ -190,19 +190,18 @@ error: type arguments [Zero.type] do not conform to method head's type parameter
 <h4>The .map</h4>
 <!-- /wp:heading -->
 
-<!-- wp:jetpack/markdown {"source":"We are interested in developing a `.map` method that should have the same meaning as in a normal list: apply the same function to every element. In our case, the returning list should have the same length as the original:\n```scala\nsealed trait TypedList[+Element, Size \u003c: Natural] {\n  def map[OtherType](f: Element =\u003e OtherType): TypedList[OtherType, Size]\n}\n\n```"} -->
+<!-- wp:jetpack/markdown {"source":"We are interested in developing a `.map` method that should have the same meaning as in a normal list: apply the same function to every element. In our case, the returning list should have the same length as the original:\n```scala\nsealed trait TypedList[+Element, Size \u003c: Natural] {\n  def map[OtherType](f: Element =\u003e OtherType): TypedList[OtherType, Size]\n}\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>We are interested in developing a <code>.map</code> method that should have the same meaning as in a normal list: apply the same function to every element. In our case, the returning list should have the same length as the original:</p>
 <pre><code class="language-scala">sealed trait TypedList[+Element, Size &lt;: Natural] {
   def map[OtherType](f: Element =&gt; OtherType): TypedList[OtherType, Size]
 }
-
 </code></pre>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":" ```\ncase object TypedNil extends TypedList[Nothing, Zero.type] {\n  override def map[OtherType](f: Nothing =\u003e OtherType): TypedList[Nothing, Zero.type] = this\n}  \n```\n\n```\ncase class TypedCons[Element, Size \u003c: Natural](\n  override val _head: Element,\n  tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n  override def map[OtherType](f: Element =\u003e OtherType): TypedList[OtherElement, Suc[Size]] = TypedCons(f(head), tail.map(f))\n}\n```"} -->
+<!-- wp:jetpack/markdown {"source":" ```\ncase object TypedNil extends TypedList[Nothing, Zero.type] {\n    override def map[OtherType](f: Nothing =\u003e OtherType): TypedList[Nothing, Zero.type] = this\n}  \n```\n\n```\ncase class TypedCons[Element, Size \u003c: Natural](\n  override val _head: Element,\n  tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n  override def map[OtherType](f: Element =\u003e OtherType): TypedList[OtherElement, Suc[Size]] = TypedCons(f(head), tail.map(f))\n}\n```"} -->
 <div class="wp-block-jetpack-markdown"><pre><code>case object TypedNil extends TypedList[Nothing, Zero.type] {
- override def map[OtherType](f: Nothing =&gt; OtherType): TypedList[Nothing, Zero.type] = this
+   override def map[OtherType](f: Nothing =&gt; OtherType): TypedList[Nothing, Zero.type] = this
 }  
 </code></pre>
 <pre><code>case class TypedCons[Element, Size &lt;: Natural](
@@ -219,11 +218,12 @@ error: type arguments [Zero.type] do not conform to method head's type parameter
 <h4>The .zip</h4>
 <!-- /wp:heading -->
 
-<!-- wp:jetpack/markdown {"source":"This case is a slightly more interesting.  \nSo, you have two lists and you want to perform an operation on every pair - each element (of the pair) being provided by a different list but at the same index.  \nOn a normal list you cannot enforce the two lists to have the same size; when one is longer, its additional elements are ignored:  \n```\nval foo = List(1, 2, 3, 4)\nval bar = List(1, 2, 3)\n\nfoo.zip(bar)\n//res: List((1,1), (2,2), (3,3))\n```"} -->
+<!-- wp:jetpack/markdown {"source":"This case is a slightly more interesting.  \nSo, you have two lists and you want to perform an operation on every pair - each element (of the pair) being provided by a different list but at the same index.  \nOn a normal list you cannot enforce the two lists to have the same size; when one is longer, its additional elements are ignored:  \n```scala\n\nval foo = List(1, 2, 3, 4)\nval bar = List(1, 2, 3)\n\nfoo.zip(bar)\n//res: List((1,1), (2,2), (3,3))\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>This case is a slightly more interesting.<br>
 So, you have two lists and you want to perform an operation on every pair - each element (of the pair) being provided by a different list but at the same index.<br>
 On a normal list you cannot enforce the two lists to have the same size; when one is longer, its additional elements are ignored:</p>
-<pre><code>val foo = List(1, 2, 3, 4)
+<pre><code class="language-scala">
+val foo = List(1, 2, 3, 4)
 val bar = List(1, 2, 3)
 
 foo.zip(bar)
@@ -238,16 +238,16 @@ On the signature at <code>TypedList</code>, <code>zip</code> must receive anothe
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"```\nsealed trait TypedList[+Element, Size \u003c: Natural]{\n  def zip[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) =\u003e C): TypedList[C, Size]\n}\n```\n```\ncase object TypedNil extends TypedList[Nothing, Zero.type]{\n  override def zip[OtherType, C](that: TypedList[OtherType, Zero.type], f: (Nothing, OtherType) =\u003e C): TypedList[C, Zero.type] = this\n}\n```\n```\ncase class TypedCons[Element, Size \u003c: Natural](\n  override val _head: Element,\n  tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n  override def zip[OtherType, C](that: TypedList[OtherType, Suc[Size]], f: (Element, OtherType) =\u003e C): TypedList[C, Suc[Size]] = that match {\n    case TypedCons(thatHead, thatTail) =\u003e TypedCons(f(head, thatHead), tail.zip(thatTail, f))\n  }\n}\n```"} -->
-<div class="wp-block-jetpack-markdown"><pre><code>sealed trait TypedList[+Element, Size &lt;: Natural]{
+<!-- wp:jetpack/markdown {"source":"```scala\nsealed trait TypedList[+Element, Size \u003c: Natural]{\n  def zip[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) =\u003e C): TypedList[C, Size]\n}\n```\n```scala\ncase object TypedNil extends TypedList[Nothing, Zero.type]{\n  override def zip[OtherType, C](that: TypedList[OtherType, Zero.type], f: (Nothing, OtherType) =\u003e C): TypedList[C, Zero.type] = this\n}\n```\n```scala\ncase class TypedCons[Element, Size \u003c: Natural](\n  override val _head: Element,\n  tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n  override def zip[OtherType, C](that: TypedList[OtherType, Suc[Size]], f: (Element, OtherType) =\u003e C): TypedList[C, Suc[Size]] = that match {\n    case TypedCons(thatHead, thatTail) =\u003e TypedCons(f(head, thatHead), tail.zip(thatTail, f))\n  }\n}\n```"} -->
+<div class="wp-block-jetpack-markdown"><pre><code class="language-scala">sealed trait TypedList[+Element, Size &lt;: Natural]{
   def zip[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) =&gt; C): TypedList[C, Size]
 }
 </code></pre>
-<pre><code>case object TypedNil extends TypedList[Nothing, Zero.type]{
+<pre><code class="language-scala">case object TypedNil extends TypedList[Nothing, Zero.type]{
   override def zip[OtherType, C](that: TypedList[OtherType, Zero.type], f: (Nothing, OtherType) =&gt; C): TypedList[C, Zero.type] = this
 }
 </code></pre>
-<pre><code>case class TypedCons[Element, Size &lt;: Natural](
+<pre><code class="language-scala">case class TypedCons[Element, Size &lt;: Natural](
   override val _head: Element,
   tail: TypedList[Element, Size]
 ) extends TypedList[Element, Suc[Size]] {
@@ -268,18 +268,18 @@ This is kinda funny behavior from the compiler.</p>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"But could we take out the pattern match? Yes.  \nThe difficulty is in defining a tail on the trait `TypedList` since we must restrict it (the tail) to have size 1 less than the `TypedList`. \nRecall for the `TypedCons` case this was embedded in the definition of `TypedCons` itself and the way it extended `TypedList`.    \nIn other words, what should we substitute `???` below for ? \n```\nsealed trait TypedList[+Element, Size \u003c: Natural] {\n  def head: Element\n  def tail: TypedList[Element, ???]\n}\n```\nThe answer lies in defining a type `Previous` for every `Natural` type. \n\n```\nsealed trait Natural {\n  type Previous \u003c: Natural\n}\n\ncase object Zero extends Natural {\n  override type Previous = Zero.type\n}\n\ncase class Suc[N \u003c: Natural]() extends Natural {\n  override type Previous = N\n}\n```\n"} -->
+<!-- wp:jetpack/markdown {"source":"But could we take out the pattern match? Yes.  \nThe difficulty is in defining a tail on the trait `TypedList` since we must restrict it (the tail) to have size 1 less than the `TypedList`. \nRecall for the `TypedCons` case this was embedded in the definition of `TypedCons` itself and the way it extended `TypedList`.    \nIn other words, what should we substitute `???` below for ? \n```scala\nsealed trait TypedList[+Element, Size \u003c: Natural] {\n  def head: Element\n  def tail: TypedList[Element, ???]\n}\n```\nThe answer lies in defining a type `Previous` for every `Natural` type. \n\n```scala\nsealed trait Natural {\n  type Previous \u003c: Natural\n}\n\ncase object Zero extends Natural {\n  override type Previous = Zero.type\n}\n\ncase class Suc[N \u003c: Natural]() extends Natural {\n  override type Previous = N\n}\n```\n"} -->
 <div class="wp-block-jetpack-markdown"><p>But could we take out the pattern match? Yes.<br>
 The difficulty is in defining a tail on the trait <code>TypedList</code> since we must restrict it (the tail) to have size 1 less than the <code>TypedList</code>.
 Recall for the <code>TypedCons</code> case this was embedded in the definition of <code>TypedCons</code> itself and the way it extended <code>TypedList</code>.<br>
 In other words, what should we substitute <code>???</code> below for ?</p>
-<pre><code>sealed trait TypedList[+Element, Size &lt;: Natural] {
+<pre><code class="language-scala">sealed trait TypedList[+Element, Size &lt;: Natural] {
   def head: Element
   def tail: TypedList[Element, ???]
 }
 </code></pre>
 <p>The answer lies in defining a type <code>Previous</code> for every <code>Natural</code> type.</p>
-<pre><code>sealed trait Natural {
+<pre><code class="language-scala">sealed trait Natural {
   type Previous &lt;: Natural
 }
 
@@ -299,22 +299,20 @@ case class Suc[N &lt;: Natural]() extends Natural {
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"```\nsealed trait TypedList[+Element, Size \u003c: Natural]{\n  protected def _tail: TypedList[Element, Size#Previous]\n  def tail[PhantomType \u003e: Size \u003c: Suc[_ \u003c: Natural]] = _tail\n}\n```\nWith now a tail on the super trait, we don't need the annoying pattern match on `that`:\n```\ncase class TypedCons[Element, Size \u003c: Natural](\n  override protected val _head: Element,\n  override protected val _tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n  override def zip[OtherType, C](that: TypedList[OtherType, Suc[Size]], f: (Element, OtherType) =\u003e C): TypedList[C, Suc[Size]] =\n    TypedCons(f(head, that.head), tail.zip(that.tail, f))\n}\n\n"} -->
-<div class="wp-block-jetpack-markdown"><pre><code>sealed trait TypedList[+Element, Size &lt;: Natural]{
+<!-- wp:jetpack/markdown {"source":"```scala\nsealed trait TypedList[+Element, Size \u003c: Natural]{\n  protected def _tail: TypedList[Element, Size#Previous]\n  def tail[PhantomType \u003e: Size \u003c: Suc[_ \u003c: Natural]] = _tail\n}\n```\nWith now a tail on the super trait, we don't need the annoying pattern match on `that`:\n```scala\ncase class TypedCons[Element, Size \u003c: Natural](\n  override protected val _head: Element,\n  override protected val _tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n  override def zip[OtherType, C](that: TypedList[OtherType, Suc[Size]], f: (Element, OtherType) =\u003e C): TypedList[C, Suc[Size]] =\n    TypedCons(f(head, that.head), tail.zip(that.tail, f))\n}"} -->
+<div class="wp-block-jetpack-markdown"><pre><code class="language-scala">sealed trait TypedList[+Element, Size &lt;: Natural]{
   protected def _tail: TypedList[Element, Size#Previous]
   def tail[PhantomType &gt;: Size &lt;: Suc[_ &lt;: Natural]] = _tail
 }
 </code></pre>
 <p>With now a tail on the super trait, we don't need the annoying pattern match on <code>that</code>:</p>
-<pre><code>case class TypedCons[Element, Size &lt;: Natural](
+<pre><code class="language-scala">case class TypedCons[Element, Size &lt;: Natural](
   override protected val _head: Element,
   override protected val _tail: TypedList[Element, Size]
 ) extends TypedList[Element, Suc[Size]] {
   override def zip[OtherType, C](that: TypedList[OtherType, Suc[Size]], f: (Element, OtherType) =&gt; C): TypedList[C, Suc[Size]] =
     TypedCons(f(head, that.head), tail.zip(that.tail, f))
-}
-
-</code></pre>
+}</code></pre>
 </div>
 <!-- /wp:jetpack/markdown -->
 
@@ -322,14 +320,14 @@ case class Suc[N &lt;: Natural]() extends Natural {
 <h3>The .concat method</h3>
 <!-- /wp:heading -->
 
-<!-- wp:jetpack/markdown {"source":"This is where things get more interesting.  \nThe .concat should give us a new list with the elements from the left followed by the elements of the right. Something like  \n```\nval foo: TypedList[String, Nat2] = \u0022Foo\u0022 :: \u0022Bar\u0022 :: TypedNil\nval bar: TypedList[String, Nat2] = \u0022Baz\u0022 :: \u0022Qux\u0022 :: TypedNil\n\nfoo.concat(bar)\n// res: TypedList[String, Nat4] = TypedList(\u0022Foo\u0022, \u0022Bar\u0022, \u0022Baz\u0022, \u0022Qux\u0022)\n```"} -->
+<!-- wp:jetpack/markdown {"source":"This is where things get more interesting.  \nThe `.concat` should give us a new list with the elements from the left followed by the elements of the right. Something like  \n```scala\nval foo: TypedList[String, Nat2] = \u0022Foo\u0022 :: \u0022Bar\u0022 :: TypedNil\nval bar: TypedList[String, Nat2] = \u0022Baz\u0022 :: \u0022Qux\u0022 :: TypedNil\n\nfoo.concat(bar)\n// res: TypedList[String, Nat4] = TypedList(Foo, Bar, Baz, Qux)\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>This is where things get more interesting.<br>
-The .concat should give us a new list with the elements from the left followed by the elements of the right. Something like</p>
-<pre><code>val foo: TypedList[String, Nat2] = &quot;Foo&quot; :: &quot;Bar&quot; :: TypedNil
+The <code>.concat</code> should give us a new list with the elements from the left followed by the elements of the right. Something like</p>
+<pre><code class="language-scala">val foo: TypedList[String, Nat2] = &quot;Foo&quot; :: &quot;Bar&quot; :: TypedNil
 val bar: TypedList[String, Nat2] = &quot;Baz&quot; :: &quot;Qux&quot; :: TypedNil
 
 foo.concat(bar)
-// res: TypedList[String, Nat4] = TypedList(&quot;Foo&quot;, &quot;Bar&quot;, &quot;Baz&quot;, &quot;Qux&quot;)
+// res: TypedList[String, Nat4] = TypedList(Foo, Bar, Baz, Qux)
 </code></pre>
 </div>
 <!-- /wp:jetpack/markdown -->
@@ -471,18 +469,22 @@ Summation is commutative. Because we are sure we coded summation of Nats correct
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"## I found two ways to solve this\n### 1. Acceptable trick  \nWhile `f(head) concat tail.flatMap(f)` above resolves to `OtherSize + (Size x OtherSize)`, if we revert the order to `tail.flatMap(f) concat f(head)` we get the type the compiler expects: `(Size x OtherSize) + OtherSize`.  \nBut `tail.flatMap(f) concat f(head)` does not do solely what we want; it also reverts the order of the elements on the list - as is apparent from the tail appearing first: \n```\nval foo: TypedList[Int, Nat3] = 1 :: 2 :: 3 :: TypedNil\ndef bar(i: Int): TypedList[Int, Nat2] = TypedCons(i*1, TypedCons(i*10))\nfoo.flatMap(bar)\n// res: TypedList[Int, Nat6] = TypedList(30, 30, 20, 20, 10, 10)\n```\nThe trick, therefor, consists in reverting the list either before or after that `.flatMap` operation. Inefficient but effective. \n```\ncase class TypedCons[Element, Size \u003c: Natural](\n  override protected val _head: Element,\n  override protected val _tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n\n  override def concat[OtherType \u003e: Element, OtherSize \u003c: Natural](that: TypedList[OtherType, OtherSize]): TypedList[OtherType, Suc[Size#Plus[OtherSize]]] =\n    TypedCons(head, tail.concat(that))\n\n  override def flatMap[OtherType, OtherSize \u003c: Natural](f: Element =\u003e TypedList[OtherType, OtherSize]): TypedList[OtherType, Size#Mult2[OtherSize]#Plus[OtherSize]] =\n    _flatMapInternal(f).reverse\n  override private [temp] def _flatMapInternal[OtherType, OtherSize \u003c: Natural](f: Element =\u003e TypedList[OtherType, OtherSize]): TypedList[OtherType, Size#Mult2[OtherSize]#Plus[OtherSize]] =\n    tail._flatMapInternal(f) concat f(head)\n\n  override def reverse: TypedList[Element, Suc[Size]] = tail.reverse :+ head\n\n  override def :+[A1 \u003e: Element](elem: A1): TypedCons[A1, Suc[Size]] = TypedCons(head, tail.:+(elem))\n}\n```"} -->
+<!-- wp:jetpack/markdown {"source":"## I found two ways to solve this\n### 1. Acceptable trick  \nWhile `f(head) concat tail.flatMap(f)` above resolves to `OtherSize + (Size x OtherSize)`, if we revert the order to `tail.flatMap(f) concat f(head)` we get the type the compiler expects: `(Size x OtherSize) + OtherSize`.  \nBut `tail.flatMap(f) concat f(head)` does not do solely what we want; it also reverts the order of the elements on the list - as is apparent from the tail appearing first: \n```scala\nval foo: TypedList[Int, Nat3] = 1 :: 2 :: 3 :: TypedNil\ndef bar(i: Int): TypedList[Int, Nat2] = TypedCons(i*1, TypedCons(i*10))\nfoo.flatMap(bar)\n// res: TypedList[Int, Nat6] = TypedList(30, 30, 20, 20, 10, 10)\n```"} -->
 <div class="wp-block-jetpack-markdown"><h2>I found two ways to solve this</h2>
 <h3>1. Acceptable trick</h3>
 <p>While <code>f(head) concat tail.flatMap(f)</code> above resolves to <code>OtherSize + (Size x OtherSize)</code>, if we revert the order to <code>tail.flatMap(f) concat f(head)</code> we get the type the compiler expects: <code>(Size x OtherSize) + OtherSize</code>.<br>
 But <code>tail.flatMap(f) concat f(head)</code> does not do solely what we want; it also reverts the order of the elements on the list - as is apparent from the tail appearing first:</p>
-<pre><code>val foo: TypedList[Int, Nat3] = 1 :: 2 :: 3 :: TypedNil
+<pre><code class="language-scala">val foo: TypedList[Int, Nat3] = 1 :: 2 :: 3 :: TypedNil
 def bar(i: Int): TypedList[Int, Nat2] = TypedCons(i*1, TypedCons(i*10))
 foo.flatMap(bar)
 // res: TypedList[Int, Nat6] = TypedList(30, 30, 20, 20, 10, 10)
 </code></pre>
-<p>The trick, therefor, consists in reverting the list either before or after that <code>.flatMap</code> operation. Inefficient but effective.</p>
-<pre><code>case class TypedCons[Element, Size &lt;: Natural](
+</div>
+<!-- /wp:jetpack/markdown -->
+
+<!-- wp:jetpack/markdown {"source":"The trick, therefor, consists in reverting the list either before or after that `.flatMap` operation. Inefficient but effective. \n```scala\ncase class TypedCons[Element, Size \u003c: Natural](\n  override protected val _head: Element,\n  override protected val _tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n\n  override def concat[OtherType \u003e: Element, OtherSize \u003c: Natural](that: TypedList[OtherType, OtherSize]): TypedList[OtherType, Suc[Size#Plus[OtherSize]]] =\n    TypedCons(head, tail.concat(that))\n\n  override def flatMap[OtherType, OtherSize \u003c: Natural](f: Element =\u003e TypedList[OtherType, OtherSize]): TypedList[OtherType, Size#Mult2[OtherSize]#Plus[OtherSize]] =\n    _flatMapInternal(f).reverse\n  override private [temp] def _flatMapInternal[OtherType, OtherSize \u003c: Natural](f: Element =\u003e TypedList[OtherType, OtherSize]): TypedList[OtherType, Size#Mult2[OtherSize]#Plus[OtherSize]] =\n    tail._flatMapInternal(f) concat f(head)\n\n  override def reverse: TypedList[Element, Suc[Size]] = tail.reverse :+ head\n\n  override def :+[A1 \u003e: Element](elem: A1): TypedCons[A1, Suc[Size]] = TypedCons(head, tail.:+(elem))\n}\n```"} -->
+<div class="wp-block-jetpack-markdown"><p>The trick, therefor, consists in reverting the list either before or after that <code>.flatMap</code> operation. Inefficient but effective.</p>
+<pre><code class="language-scala">case class TypedCons[Element, Size &lt;: Natural](
   override protected val _head: Element,
   override protected val _tail: TypedList[Element, Size]
 ) extends TypedList[Element, Suc[Size]] {
@@ -503,10 +505,10 @@ foo.flatMap(bar)
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"Notice it was necessary to develop a `reverse` operation which in turn required the append operation `:+` as well.  \nMore importantly, the actual \u0022flatMapping\u0022 is done at `_flatMapInternal`. Being the responsibility of the api method `flatMap` just to call it and then reverse the result it gets. Now we obtain:  \n```\nval foo: TypedList = 1 :: 2 :: 3 :: TypedNil\ndef bar(i: Int): TypedList[Int, Nat2] = TypedCons(i*1, TypedCons(i*10))\nfoo.flatMap(bar)\n// res: TypedList[Int, Nat6] = TypedList(10, 10, 20, 20, 30, 30)\n```\n"} -->
+<!-- wp:jetpack/markdown {"source":"Notice it was necessary to develop a `reverse` operation which in turn required the append operation `:+` as well.  \nMore importantly, the actual \u0022flatMapping\u0022 is done at `_flatMapInternal`. Being the responsibility of the api method `flatMap` just to call it and then reverse the result it gets. Now we obtain:  \n```scala\nval foo: TypedList = 1 :: 2 :: 3 :: TypedNil\ndef bar(i: Int): TypedList[Int, Nat2] = TypedCons(i*1, TypedCons(i*10))\nfoo.flatMap(bar)\n// res: TypedList[Int, Nat6] = TypedList(10, 10, 20, 20, 30, 30)\n```\n"} -->
 <div class="wp-block-jetpack-markdown"><p>Notice it was necessary to develop a <code>reverse</code> operation which in turn required the append operation <code>:+</code> as well.<br>
 More importantly, the actual &quot;flatMapping&quot; is done at <code>_flatMapInternal</code>. Being the responsibility of the api method <code>flatMap</code> just to call it and then reverse the result it gets. Now we obtain:</p>
-<pre><code>val foo: TypedList = 1 :: 2 :: 3 :: TypedNil
+<pre><code class="language-scala">val foo: TypedList = 1 :: 2 :: 3 :: TypedNil
 def bar(i: Int): TypedList[Int, Nat2] = TypedCons(i*1, TypedCons(i*10))
 foo.flatMap(bar)
 // res: TypedList[Int, Nat6] = TypedList(10, 10, 20, 20, 30, 30)
@@ -514,11 +516,11 @@ foo.flatMap(bar)
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"### 2. Formulate multiplication at the type level differently\nThe formulation of multiplication above is correct. In fact it is the same as the one from these [guys on slide 27](#slick_scala), which do appear to know a lot about the issue.  \nTo solve our problem however, I just tried to change the order \n```\ncase class Suc[N]() extends Natural {\n  override type Mult[M \u003c: Natural] = M#Plus[N#Mult[M]]\n// instead of\n// override type Mult[M \u003c: Natural] = (N#Mult[M])#Plus[M]\n}\n```"} -->
+<!-- wp:jetpack/markdown {"source":"### 2. Formulate multiplication at the type level differently\nThe formulation of multiplication above is correct. In fact it is the same as the one from these [guys on slide 27](#slick_scala), which do appear to know a lot about the issue.  \nTo solve our problem however, I just tried to change the order of the operands:  \n```scala\ncase class Suc[N]() extends Natural {\n  override type Mult[M \u003c: Natural] = M#Plus[N#Mult[M]]\n// instead of\n// override type Mult[M \u003c: Natural] = (N#Mult[M])#Plus[M]\n}\n```"} -->
 <div class="wp-block-jetpack-markdown"><h3>2. Formulate multiplication at the type level differently</h3>
 <p>The formulation of multiplication above is correct. In fact it is the same as the one from these <a href="#slick_scala">guys on slide 27</a>, which do appear to know a lot about the issue.<br>
-To solve our problem however, I just tried to change the order</p>
-<pre><code>case class Suc[N]() extends Natural {
+To solve our problem however, I just tried to change the order of the operands:</p>
+<pre><code class="language-scala">case class Suc[N]() extends Natural {
   override type Mult[M &lt;: Natural] = M#Plus[N#Mult[M]]
 // instead of
 // override type Mult[M &lt;: Natural] = (N#Mult[M])#Plus[M]
@@ -527,9 +529,9 @@ To solve our problem however, I just tried to change the order</p>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"The question is whether this formulation is equivalent. Does it also embody multiplication as required ? Yes, it does. All the below compile:  \n```\nimplicitly[Nat3#Mult[Nat2] =:= Nat6]\nimplicitly[Nat5#Mult[Nat2] =:= Nat10]\n\nimplicitly[Nat2#Mult[Nat9] =:= Nat2#Mult2[Nat9]]\nimplicitly[Nat3#Mult[Nat8] =:= Nat3#Mult2[Nat8]]\n```\nWhere `Mult2` corresponds to the initial \u0022encoding\u0022 of multiplication."} -->
+<!-- wp:jetpack/markdown {"source":"The question is whether this formulation is equivalent. Does it also embody multiplication as required ? Yes, it does. All the below compile:  \n```scala\nimplicitly[Nat3#Mult[Nat2] =:= Nat6]\nimplicitly[Nat5#Mult[Nat2] =:= Nat10]\n\nimplicitly[Nat2#Mult[Nat9] =:= Nat2#Mult2[Nat9]]\nimplicitly[Nat3#Mult[Nat8] =:= Nat3#Mult2[Nat8]]\n```\nWhere `Mult2` corresponds to the initial \u0022encoding\u0022 of multiplication."} -->
 <div class="wp-block-jetpack-markdown"><p>The question is whether this formulation is equivalent. Does it also embody multiplication as required ? Yes, it does. All the below compile:</p>
-<pre><code>implicitly[Nat3#Mult[Nat2] =:= Nat6]
+<pre><code class="language-scala">implicitly[Nat3#Mult[Nat2] =:= Nat6]
 implicitly[Nat5#Mult[Nat2] =:= Nat10]
 
 implicitly[Nat2#Mult[Nat9] =:= Nat2#Mult2[Nat9]]
@@ -539,9 +541,9 @@ implicitly[Nat3#Mult[Nat8] =:= Nat3#Mult2[Nat8]]
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"With this new formulation for the type contructor field `Mult`, the compiller will glady accept\n```\ncase class TypedCons[Element, Size \u003c: Natural](\n  override protected val _head: Element,\n  override protected val _tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n\n override def concat[OtherElement \u003e: Element, OtherSize \u003c: Natural](that: TypedList[OtherElement, OtherSize]): TypedList[OtherElement, Suc[Size#Plus[OtherSize]]] =\n    TypedCons(head, tail.concat(that))\n\n override def flatMap[OtherType, OtherSize \u003c: Natural](f: Element =\u003e TypedList[OtherType, OtherSize]): TypedList[OtherType, OtherSize#Plus[Size#Mult[OtherSize]]] =\n    f(head) concat tail.flatMap(f)\n}\n```"} -->
+<!-- wp:jetpack/markdown {"source":"With this new formulation for the type contructor field `Mult`, the compiller will glady accept\n```scala\ncase class TypedCons[Element, Size \u003c: Natural](\n  override protected val _head: Element,\n  override protected val _tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n\n override def concat[OtherElement \u003e: Element, OtherSize \u003c: Natural](that: TypedList[OtherElement, OtherSize]): TypedList[OtherElement, Suc[Size#Plus[OtherSize]]] =\n    TypedCons(head, tail.concat(that))\n\n override def flatMap[OtherType, OtherSize \u003c: Natural](f: Element =\u003e TypedList[OtherType, OtherSize]): TypedList[OtherType, OtherSize#Plus[Size#Mult[OtherSize]]] =\n    f(head) concat tail.flatMap(f)\n}\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>With this new formulation for the type contructor field <code>Mult</code>, the compiller will glady accept</p>
-<pre><code>case class TypedCons[Element, Size &lt;: Natural](
+<pre><code class="language-scala">case class TypedCons[Element, Size &lt;: Natural](
   override protected val _head: Element,
   override protected val _tail: TypedList[Element, Size]
 ) extends TypedList[Element, Suc[Size]] {
@@ -556,8 +558,8 @@ implicitly[Nat3#Mult[Nat8] =:= Nat3#Mult2[Nat8]]
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"Without the need for that internal flatMap function and without the need for the reverse operation. So this approach is not only more elegant, but also more efficient."} -->
-<div class="wp-block-jetpack-markdown"><p>Without the need for that internal flatMap function and without the need for the reverse operation. So this approach is not only more elegant, but also more efficient.</p>
+<!-- wp:jetpack/markdown {"source":"Without the need for that internal flatMap function and without the need for the reverse operation. This approach is not only more elegant, but also more efficient."} -->
+<div class="wp-block-jetpack-markdown"><p>Without the need for that internal flatMap function and without the need for the reverse operation. This approach is not only more elegant, but also more efficient.</p>
 </div>
 <!-- /wp:jetpack/markdown -->
 
@@ -565,10 +567,10 @@ implicitly[Nat3#Mult[Nat8] =:= Nat3#Mult2[Nat8]]
 <h3>The .split</h3>
 <!-- /wp:heading -->
 
-<!-- wp:jetpack/markdown {"source":"At last the `.split` operation. The most difficult to implement.  \nWe are interested in the following behaviour:  \n```\nval foo: TypedList[String, Nat5] = \u0022Foo\u0022 :: \u0022Bar\u0022 :: \u0022Baz\u0022 :: \u0022Qux\u0022 :: \u0022Quux\u0022 :: TypedNil\n\nval (left, right) = foo.split[Nat2]\n// res (left): TypedList[String, Nat2] = TypedList(Foo, Bar)\n// res (right): TypedList[String, Nat3] = TypedList(Baz, Qux, Quux)\n```"} -->
+<!-- wp:jetpack/markdown {"source":"At last the `.split` operation. The most difficult to implement.  \nWe are interested in the following behaviour:  \n```scala\nval foo: TypedList[String, Nat5] = \u0022Foo\u0022 :: \u0022Bar\u0022 :: \u0022Baz\u0022 :: \u0022Qux\u0022 :: \u0022Quux\u0022 :: TypedNil\n\nval (left, right) = foo.split[Nat2]\n// res (left): TypedList[String, Nat2] = TypedList(Foo, Bar)\n// res (right): TypedList[String, Nat3] = TypedList(Baz, Qux, Quux)\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>At last the <code>.split</code> operation. The most difficult to implement.<br>
 We are interested in the following behaviour:</p>
-<pre><code>val foo: TypedList[String, Nat5] = &quot;Foo&quot; :: &quot;Bar&quot; :: &quot;Baz&quot; :: &quot;Qux&quot; :: &quot;Quux&quot; :: TypedNil
+<pre><code class="language-scala">val foo: TypedList[String, Nat5] = &quot;Foo&quot; :: &quot;Bar&quot; :: &quot;Baz&quot; :: &quot;Qux&quot; :: &quot;Quux&quot; :: TypedNil
 
 val (left, right) = foo.split[Nat2]
 // res (left): TypedList[String, Nat2] = TypedList(Foo, Bar)
@@ -588,8 +590,8 @@ Subtraction was trickier. With the help of @Alexey Romanov in these <a href="htt
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"\n```\npackage foo\nsealed trait Natural {\n  type Previous \u003c: Natural\n  private [foo] type _Minus[M \u003c: Natural] \u003c: Natural\n  type Minus[M \u003c: Natural] = M#_Minus[Suc[Previous]]\n}\n```"} -->
-<div class="wp-block-jetpack-markdown"><pre><code>package foo
+<!-- wp:jetpack/markdown {"source":"\n```scala\npackage foo\nsealed trait Natural {\n  type Previous \u003c: Natural\n  private [foo] type _Minus[M \u003c: Natural] \u003c: Natural\n  type Minus[M \u003c: Natural] = M#_Minus[Suc[Previous]]\n}\n```"} -->
+<div class="wp-block-jetpack-markdown"><pre><code class="language-scala">package foo
 sealed trait Natural {
   type Previous &lt;: Natural
   private [foo] type _Minus[M &lt;: Natural] &lt;: Natural
@@ -599,15 +601,15 @@ sealed trait Natural {
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"This encoding might feel confusing. Reading the SO thread might shed some light.  \nThis hack is very much the same as the \u00221st solution\u0022 for the flatMap problem discussed previously. This being the type-level counterpart.  \nThe type constructor to be exposed is `Minus[M \u003c: Natural]`. `_Minus` is internal and a way to achieve the semantics of subtraction. "} -->
+<!-- wp:jetpack/markdown {"source":"This encoding might feel confusing. Reading the SO thread might shed some light.  \nThis hack is very much the same as the \u00221st solution\u0022 for the flatMap problem discussed previously, where we had an internal `_flatMap`. This is the type-level counterpart.  \nThe type constructor to be exposed is `Minus[M \u003c: Natural]`. `_Minus` is internal and a way to achieve the semantics of subtraction. "} -->
 <div class="wp-block-jetpack-markdown"><p>This encoding might feel confusing. Reading the SO thread might shed some light.<br>
-This hack is very much the same as the &quot;1st solution&quot; for the flatMap problem discussed previously. This being the type-level counterpart.<br>
+This hack is very much the same as the &quot;1st solution&quot; for the flatMap problem discussed previously, where we had an internal <code>_flatMap</code>. This is the type-level counterpart.<br>
 The type constructor to be exposed is <code>Minus[M &lt;: Natural]</code>. <code>_Minus</code> is internal and a way to achieve the semantics of subtraction.</p>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"```\ncase object Zero extends Natural {\n  override type Previous = Zero.type\n  override private [foo] type _Minus[M \u003c: Natural] = M\n}\n```"} -->
-<div class="wp-block-jetpack-markdown"><pre><code>case object Zero extends Natural {
+<!-- wp:jetpack/markdown {"source":"```scala\ncase object Zero extends Natural {\n  override type Previous = Zero.type\n  override private [foo] type _Minus[M \u003c: Natural] = M\n}\n```"} -->
+<div class="wp-block-jetpack-markdown"><pre><code class="language-scala">case object Zero extends Natural {
   override type Previous = Zero.type
   override private [foo] type _Minus[M &lt;: Natural] = M
 }
@@ -615,8 +617,8 @@ The type constructor to be exposed is <code>Minus[M &lt;: Natural]</code>. <code
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"```\ncase class Suc[N \u003c: Natural]() extends Natural {\n  override type Previous = N\n  override private [foo] type _Minus[M \u003c: Natural] = Previous#_Minus[M#Previous]\n}\n```"} -->
-<div class="wp-block-jetpack-markdown"><pre><code>case class Suc[N &lt;: Natural]() extends Natural {
+<!-- wp:jetpack/markdown {"source":"```scala\ncase class Suc[N \u003c: Natural]() extends Natural {\n  override type Previous = N\n  override private [foo] type _Minus[M \u003c: Natural] = Previous#_Minus[M#Previous]\n}\n```"} -->
+<div class="wp-block-jetpack-markdown"><pre><code class="language-scala">case class Suc[N &lt;: Natural]() extends Natural {
   override type Previous = N
   override private [foo] type _Minus[M &lt;: Natural] = Previous#_Minus[M#Previous]
 }
@@ -624,24 +626,27 @@ The type constructor to be exposed is <code>Minus[M &lt;: Natural]</code>. <code
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"Notice that `_Minus` would only work if `M` was greater than `Suc[N]`. \n```\nNat2#_Minus[Nat3] = \nNat1#_Minus[Nat2] = \nNat0#_Minus[Nat1] = Nat1\n```\nBut \n```\nNat3#_Minus[Nat2] = \nNat2#_Minus[Nat1] = \nNat1#_Minus[Nat0] = \nNat0#_Minus[Nat0] = Nat0\n```\nTherefore, we hide `_Minus` and wrap it within `Minus`, which, before calling `_Minus` inverts the operands (swap the the n and m in `n - m`)"} -->
-<div class="wp-block-jetpack-markdown"><p>Notice that <code>_Minus</code> would only work if <code>M</code> was greater than <code>Suc[N]</code>.</p>
-<pre><code>Nat2#_Minus[Nat3] = 
+<!-- wp:jetpack/markdown {"source":"Notice that `_Minus` above, on its own, would only work if `M` was greater than `Suc[N]`:\n```scala\nNat2#_Minus[Nat3] = \nNat1#_Minus[Nat2] = \nNat0#_Minus[Nat1] = Nat1\n// Good\n```\nBut \n```scala\nNat3#_Minus[Nat2] = \nNat2#_Minus[Nat1] = \nNat1#_Minus[Nat0] = \nNat0#_Minus[Nat0] = Nat0\n// Bad\n```\nTherefore, we hide `_Minus` and wrap it within `Minus`, which, before calling `_Minus` inverts the operands (swap the the n and m in `n - m`)"} -->
+<div class="wp-block-jetpack-markdown"><p>Notice that <code>_Minus</code> above, on its own, would only work if <code>M</code> was greater than <code>Suc[N]</code>:</p>
+<pre><code class="language-scala">Nat2#_Minus[Nat3] = 
 Nat1#_Minus[Nat2] = 
 Nat0#_Minus[Nat1] = Nat1
+// Good
 </code></pre>
 <p>But</p>
-<pre><code>Nat3#_Minus[Nat2] = 
+<pre><code class="language-scala">Nat3#_Minus[Nat2] = 
 Nat2#_Minus[Nat1] = 
 Nat1#_Minus[Nat0] = 
 Nat0#_Minus[Nat0] = Nat0
+// Bad
 </code></pre>
 <p>Therefore, we hide <code>_Minus</code> and wrap it within <code>Minus</code>, which, before calling <code>_Minus</code> inverts the operands (swap the the n and m in <code>n - m</code>)</p>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"```\n// Subtracting n-m:\n\n// Works when n\u003em\nimplicitly[Nat9#Minus[Nat5] =:= Nat4]   // compiles\n\n// Gives 0 when n\u003cm (more than fine. We are not interested nor model the negative numbers)\nimplicitly[Nat0#Minus[Nat5] =:= Nat0]   // compiles\nimplicitly[Nat2#Minus[Nat5] =:= Nat0]   // compiles\n```"} -->
-<div class="wp-block-jetpack-markdown"><pre><code>// Subtracting n-m:
+<!-- wp:jetpack/markdown {"source":"```\nWe then obtain the desired behaviour:\n// Subtracting n-m:\n\n// Works when n\u003em\nimplicitly[Nat9#Minus[Nat5] =:= Nat4]   // compiles\n\n// Gives 0 when n\u003cm (more than fine. We are not interested nor model the negative numbers)\nimplicitly[Nat0#Minus[Nat5] =:= Nat0]   // compiles\nimplicitly[Nat2#Minus[Nat5] =:= Nat0]   // compiles\n```"} -->
+<div class="wp-block-jetpack-markdown"><pre><code>We then obtain the desired behaviour:
+// Subtracting n-m:
 
 // Works when n&gt;m
 implicitly[Nat9#Minus[Nat5] =:= Nat4]   // compiles
@@ -653,9 +658,9 @@ implicitly[Nat2#Minus[Nat5] =:= Nat0]   // compiles
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"We have defined the types to be returned by the `split` method.  Proceeding to defining the methods themselves.  \n```\nsealed trait TypedList[+Element, Size \u003c: Natural] {\n  def split[At \u003c: Suc[_ \u003c: Natural]]: (TypedList[Element, At], TypedList[Element, Size#Minus[At])\n}\n```"} -->
+<!-- wp:jetpack/markdown {"source":"We have defined the types to be returned by the `split` method.  Proceeding to defining the methods themselves.  \n```scala\nsealed trait TypedList[+Element, Size \u003c: Natural] {\n  def split[At \u003c: Suc[_ \u003c: Natural]]: (TypedList[Element, At], TypedList[Element, Size#Minus[At])\n}\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>We have defined the types to be returned by the <code>split</code> method.  Proceeding to defining the methods themselves.</p>
-<pre><code>sealed trait TypedList[+Element, Size &lt;: Natural] {
+<pre><code class="language-scala">sealed trait TypedList[+Element, Size &lt;: Natural] {
   def split[At &lt;: Suc[_ &lt;: Natural]]: (TypedList[Element, At], TypedList[Element, Size#Minus[At])
 }
 </code></pre>
@@ -675,8 +680,8 @@ To split <code>TypedList(&quot;Foo&quot;, &quot;Bar&quot;, &quot;Baz&quot;, &quo
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"```\ncase class TypedCons[Element, Size \u003c: Natural](\n  override protected val _head: Element,\n  override protected val _tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n  override def split[At \u003c: Suc[_ \u003c: Natural]](\n    implicit n: At,\n    leftList: TypedList[Natural, At],\n    rightList: TypedList[Natural, Suc[Size]#Minus[At]]\n): (TypedList[Element, At], TypedList[Element, Suc[Size]#Minus[At]]) = \n  (\n    leftList.map(_get),\n    rightList.map(i =\u003e _get(i.plus(n)))\n  )\n}\n```"} -->
-<div class="wp-block-jetpack-markdown"><pre><code>case class TypedCons[Element, Size &lt;: Natural](
+<!-- wp:jetpack/markdown {"source":"```scala\ncase class TypedCons[Element, Size \u003c: Natural](\n  override protected val _head: Element,\n  override protected val _tail: TypedList[Element, Size]\n) extends TypedList[Element, Suc[Size]] {\n  override def split[At \u003c: Suc[_ \u003c: Natural]](\n    implicit n: At,\n    leftList: TypedList[Natural, At],\n    rightList: TypedList[Natural, Suc[Size]#Minus[At]]\n): (TypedList[Element, At], TypedList[Element, Suc[Size]#Minus[At]]) = \n  (\n    leftList.map(_get),\n    rightList.map(i =\u003e _get(i.plus(n)))\n  )\n}\n```"} -->
+<div class="wp-block-jetpack-markdown"><pre><code class="language-scala">case class TypedCons[Element, Size &lt;: Natural](
   override protected val _head: Element,
   override protected val _tail: TypedList[Element, Size]
 ) extends TypedList[Element, Suc[Size]] {
@@ -709,10 +714,10 @@ And why is this relevant?
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"Where we don't show the implementation of `_get` - which is not difficult to formulate.  \nBut how is the compiler able to find these implicits? Because we defined, on the implicit search scope, for these function only specific engineered implicits:  \n```\nimplicit def typedListOfNats[N \u003c: Natural](implicit previousNatTypedList: TypedList[Natural, N], thisNat: Suc[N]): TypedList[Natural, Suc[N]] =\n    previousNatTypedList :+ thisNat\n\nimplicit def emptyList[A]: TypedList[A, Zero.type] = TypedNil\n```"} -->
+<!-- wp:jetpack/markdown {"source":"Where we don't show the implementation of `_get` - which is not difficult to formulate.  \nBut how is the compiler able to find these implicits? Because we defined, on the implicit search scope, and for these function only, specificly \u0022engineered\u0022 implicits:  \n```scala\nimplicit def typedListOfNats[N \u003c: Natural](implicit previousNatTypedList: TypedList[Natural, N], thisNat: Suc[N]): TypedList[Natural, Suc[N]] =\n    previousNatTypedList :+ thisNat\n\nimplicit def emptyList[A]: TypedList[A, Zero.type] = TypedNil\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>Where we don't show the implementation of <code>_get</code> - which is not difficult to formulate.<br>
-But how is the compiler able to find these implicits? Because we defined, on the implicit search scope, for these function only specific engineered implicits:</p>
-<pre><code>implicit def typedListOfNats[N &lt;: Natural](implicit previousNatTypedList: TypedList[Natural, N], thisNat: Suc[N]): TypedList[Natural, Suc[N]] =
+But how is the compiler able to find these implicits? Because we defined, on the implicit search scope, and for these function only, specificly &quot;engineered&quot; implicits:</p>
+<pre><code class="language-scala">implicit def typedListOfNats[N &lt;: Natural](implicit previousNatTypedList: TypedList[Natural, N], thisNat: Suc[N]): TypedList[Natural, Suc[N]] =
     previousNatTypedList :+ thisNat
 
 implicit def emptyList[A]: TypedList[A, Zero.type] = TypedNil
@@ -720,16 +725,16 @@ implicit def emptyList[A]: TypedList[A, Zero.type] = TypedNil
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"It is hopefully not difficult to understand the above implicits allow for the behaviour:  \n```\nimplicitly[TypedList[Nat4]]\n//res: TypedList[Natural, Nat4] = TypedList(nat1, nat2, nat3, nat4)"} -->
+<!-- wp:jetpack/markdown {"source":"It is hopefully not difficult to understand the above implicits allow for the behaviour:  \n```scala\nimplicitly[TypedList[Nat4]]\n//res: TypedList[Natural, Nat4] = TypedList(nat1, nat2, nat3, nat4)"} -->
 <div class="wp-block-jetpack-markdown"><p>It is hopefully not difficult to understand the above implicits allow for the behaviour:</p>
-<pre><code>implicitly[TypedList[Nat4]]
+<pre><code class="language-scala">implicitly[TypedList[Nat4]]
 //res: TypedList[Natural, Nat4] = TypedList(nat1, nat2, nat3, nat4)</code></pre>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"Lastly, notice that we are still able to split a TypedList by an index greater than the list's size:  \n```\nval foo: TypedList[String, Nat5] = \u0022Foo\u0022 :: \u0022Bar\u0022 :: \u0022Baz\u0022 :: \u0022Qux\u0022 :: \u0022Quux\u0022 :: TypedNil\n\nfoo.split[Nat6]\n// res: java.lang.Exception: Boom!\n``` "} -->
+<!-- wp:jetpack/markdown {"source":"Lastly, notice that we are still able to split a TypedList by an index greater than the list's size:  \n```scala\nval foo: TypedList[String, Nat5] = \u0022Foo\u0022 :: \u0022Bar\u0022 :: \u0022Baz\u0022 :: \u0022Qux\u0022 :: \u0022Quux\u0022 :: TypedNil\n\nfoo.split[Nat6]\n// res: java.lang.Exception: Boom!\n``` "} -->
 <div class="wp-block-jetpack-markdown"><p>Lastly, notice that we are still able to split a TypedList by an index greater than the list's size:</p>
-<pre><code>val foo: TypedList[String, Nat5] = &quot;Foo&quot; :: &quot;Bar&quot; :: &quot;Baz&quot; :: &quot;Qux&quot; :: &quot;Quux&quot; :: TypedNil
+<pre><code class="language-scala">val foo: TypedList[String, Nat5] = &quot;Foo&quot; :: &quot;Bar&quot; :: &quot;Baz&quot; :: &quot;Qux&quot; :: &quot;Quux&quot; :: TypedNil
 
 foo.split[Nat6]
 // res: java.lang.Exception: Boom!
@@ -737,9 +742,9 @@ foo.split[Nat6]
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"Restraining calls to method `split` for indexes greater than the list's size is more demanding than using a phatom type as done for protecting calls to `head` and `tail` on an empty list. Instead, we need to protect this calls with an implicit evidence. \n```\ndef split[At \u003c: Suc[_ \u003c: Natural]](implicit ev: LowerOrEqual[At, Size])\n```"} -->
+<!-- wp:jetpack/markdown {"source":"Restraining calls to method `split` for indexes greater than the list's size is more demanding than using a phatom type as done for protecting calls to `head` and `tail` on an empty list. Instead, we need to protect this calls with an implicit evidence. \n```scala\ndef split[At \u003c: Suc[_ \u003c: Natural]](implicit ev: LowerOrEqual[At, Size])\n```"} -->
 <div class="wp-block-jetpack-markdown"><p>Restraining calls to method <code>split</code> for indexes greater than the list's size is more demanding than using a phatom type as done for protecting calls to <code>head</code> and <code>tail</code> on an empty list. Instead, we need to protect this calls with an implicit evidence.</p>
-<pre><code>def split[At &lt;: Suc[_ &lt;: Natural]](implicit ev: LowerOrEqual[At, Size])
+<pre><code class="language-scala">def split[At &lt;: Suc[_ &lt;: Natural]](implicit ev: LowerOrEqual[At, Size])
 </code></pre>
 </div>
 <!-- /wp:jetpack/markdown -->
@@ -789,12 +794,12 @@ implicitly[LowerOrEqual[Nat6, Nat5]]    // does not compile (i.e. implicit not f
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"How exactly do those two `foo` and `bar` implicit defs achieve this behavior ? Via implicit recursion and clever engineering of the return types of the two functions:"} -->
-<div class="wp-block-jetpack-markdown"><p>How exactly do those two <code>foo</code> and <code>bar</code> implicit defs achieve this behavior ? Via implicit recursion and clever engineering of the return types of the two functions:</p>
+<!-- wp:jetpack/markdown {"source":"How exactly do those two `foo` and `bar` implicit defs achieve this behavior ? Via implicit recursion and clever engineering of the return types of the two functions. Lets study the possible cases:"} -->
+<div class="wp-block-jetpack-markdown"><p>How exactly do those two <code>foo</code> and <code>bar</code> implicit defs achieve this behavior ? Via implicit recursion and clever engineering of the return types of the two functions. Lets study the possible cases:</p>
 </div>
 <!-- /wp:jetpack/markdown -->
 
-<!-- wp:jetpack/markdown {"source":"\n**case 1**. `LowerOrEqual[Nat0, NatY]` (for some `NatY`)     \nThe compiler realizes function `bar` can return the desired type (for the appropriate `M` in `bar[M \u003c: Natural]`. Problem solved.  \n**case 2**. `LowerOrEqual[NatX, Nat0]`  (for some `NatX` not `Nat0`)  \nThe compiler realizes neither function `bar` or `foo` may ever return the necessary type.  Compiler error.  \n**case 3**. `LowerOrEqual[NatX, NatY]` (where `NatX` and `NatY` are not `Nat0`)  \nThe compiler understands function `foo` may potentially return the desired type.  For that however, it needs to find yet another implicit: the argument `ev` in `foo`.  And so this gives origin to a recursive implicit resolution by the compiler, which ultimately leads to either **case 1**, thus compiling, or **case 2**, thus not compiling.  \nYou should be able to notice, by looking at the return type of function `foo` and the type of `ev` that:  \na. **Case 1** is reached iff `N \u003c M`    \nb. **Case 2** is reached iff `N \u003e M`  \n\n  "} -->
+<!-- wp:jetpack/markdown {"source":"\n**case 1**. `LowerOrEqual[Nat0, NatY]` (for some `NatY`)     \nThe compiler realizes function `bar` can return the desired type (for the appropriate `M` in `bar[M \u003c: Natural]`. Problem solved.  \n**case 2**. `LowerOrEqual[NatX, Nat0]`  (for some `NatX` not `Nat0`)  \nThe compiler realizes neither function `bar` or `foo` may ever return the necessary type.  Compiler error.  \n**case 3**. `LowerOrEqual[NatX, NatY]` (where `NatX` and `NatY` are not `Nat0`)  \nThe compiler understands function `foo` may potentially return the desired type.  For that however, it needs to find yet another implicit: the argument `ev` in `foo`.  And so this gives origin to a recursive implicit resolution by the compiler, which ultimately leads to either **case 1**, thus compiling, or **case 2**, thus not compiling.  \nYou should be able to notice, by looking at the return type of function `foo` and the type of `ev` that:  \na. **Case 1** is reached if and only if `N \u003c M`    \nb. **Case 2** is reached if and only if `N \u003e M`  \n\n  "} -->
 <div class="wp-block-jetpack-markdown"><p><strong>case 1</strong>. <code>LowerOrEqual[Nat0, NatY]</code> (for some <code>NatY</code>)<br>
 The compiler realizes function <code>bar</code> can return the desired type (for the appropriate <code>M</code> in <code>bar[M &lt;: Natural]</code>. Problem solved.<br>
 <strong>case 2</strong>. <code>LowerOrEqual[NatX, Nat0]</code>  (for some <code>NatX</code> not <code>Nat0</code>)<br>
@@ -802,8 +807,8 @@ The compiler realizes neither function <code>bar</code> or <code>foo</code> may 
 <strong>case 3</strong>. <code>LowerOrEqual[NatX, NatY]</code> (where <code>NatX</code> and <code>NatY</code> are not <code>Nat0</code>)<br>
 The compiler understands function <code>foo</code> may potentially return the desired type.  For that however, it needs to find yet another implicit: the argument <code>ev</code> in <code>foo</code>.  And so this gives origin to a recursive implicit resolution by the compiler, which ultimately leads to either <strong>case 1</strong>, thus compiling, or <strong>case 2</strong>, thus not compiling.<br>
 You should be able to notice, by looking at the return type of function <code>foo</code> and the type of <code>ev</code> that:<br>
-a. <strong>Case 1</strong> is reached iff <code>N &lt; M</code><br>
-b. <strong>Case 2</strong> is reached iff <code>N &gt; M</code></p>
+a. <strong>Case 1</strong> is reached if and only if <code>N &lt; M</code><br>
+b. <strong>Case 2</strong> is reached if and only if <code>N &gt; M</code></p>
 </div>
 <!-- /wp:jetpack/markdown -->
 
@@ -816,9 +821,11 @@ b. <strong>Case 2</strong> is reached iff <code>N &gt; M</code></p>
 <h3>Footnotes</h3>
 <!-- /wp:heading -->
 
-<!-- wp:jetpack/markdown {"source":"1. Here I extend the behavior of `zip` to applying any given function to a pair of elements, instead of just joining the two elements in a tuple."} -->
+<!-- wp:jetpack/markdown {"source":"1. Here I extend the behavior of `zip` to applying any given function to a pair of elements, instead of just joining the two elements in a tuple.\n2. The motivation for developing this typed list and blog post was a very nice talk by [Joe Barnes](#joe_barnes_talk).   \nAnother essential source knowledge was this blog post from [Yao Li](#yao_li), which I highly recommend. That said, I have derived everything on the lib on my own and added several new features, most important of these being the `split` operation and type constructor `Minus` on naturals.  "} -->
 <div class="wp-block-jetpack-markdown"><ol>
 <li>Here I extend the behavior of <code>zip</code> to applying any given function to a pair of elements, instead of just joining the two elements in a tuple.</li>
+<li>The motivation for developing this typed list and blog post was a very nice talk by <a href="#joe_barnes_talk">Joe Barnes</a>.<br>
+Another essential source knowledge was this blog post from <a href="#yao_li">Yao Li</a>, which I highly recommend. That said, I have derived everything on the lib on my own and added several new features, most important of these being the <code>split</code> operation and type constructor <code>Minus</code> on naturals.</li>
 </ol>
 </div>
 <!-- /wp:jetpack/markdown -->
@@ -828,13 +835,13 @@ b. <strong>Case 2</strong> is reached iff <code>N &gt; M</code></p>
 <!-- /wp:heading -->
 
 <!-- wp:html -->
-<p> 1. <a name="joe_barnes_talk" class="mce-item-anchor"></a> Barnes, Joe. Typelevel Programming 101: The Subspace of Scala.
-https://www.youtube.com/watch?v=_-J4YRI1rAw&t=5s </p>
+<p> 1. <a name="joe_barnes_talk" class="mce-item-anchor"></a> Barnes, Joe. Typelevel Programming 101: The Subspace of Scala. <br>
+https://www.youtube.com/watch?v=_-J4YRI1rAw&amp;t=5s </p>
 
 <p> 2. <a name="yao_li" class="mce-item-anchor"></a> Li, Yao. Dependent Types in Scala. <br>  
 https://lastland.github.io/pl-blog/posts/2017-09-03-dtscala.html </p>
 
-<p> 3. <a name="slick_scala" class="mce-item-anchor"></a> Zeiger, Stefan. Type-Level Computations in Scala.
+<p> 3. <a name="slick_scala" class="mce-item-anchor"></a> Zeiger, Stefan. Type-Level Computations in Scala. <br>
 http://slick.lightbend.com/talks/scalaio2014/Type-Level_Computations.pdf </p>
 <!-- /wp:html -->
 
