@@ -7,22 +7,45 @@ No 3rd party libraries.
 ## Usage
 
 ```scala
-val foo = 11 :: 20 :: 34 :: 49 :: 54 :: TypedNil
+val aListOfSizeEight = 1 :: 2 :: 3 :: 4 :: 5 :: 6 :: 7 :: 8 :: TypedNil
 
-foo.split[Nat2]
-// res: (TypedList[Int, Nat2], TypedList[Int, Nat3]) = (TypedList(11, 20), TypedList(34, 49, 54) )
+// Compile error when accessing element outside bounds (as the bounds are known at compile time)
+// aListOfSizeEight.get[Nat10] // uncomment line
 
-foo.get[Nat4]
-// res: Int = 49
+// Compile error when accessing head/tail of empty list 
+val aListOfSizeOne = "Carlos" :: TypedNil
+val anEmptyList = aListOfSizeOne.tail
+println(anEmptyList)
+//println(anEmptyList.head)  //uncomment line
+//println(anEmptyList.tail)  //uncomment line
 
-foo.get[Nat6]
-// error: Nat6 is not lower or equal to Nat5
+// You can get an element at a specific index
+val elemAtIndex = aListOfSizeEight.get[Nat3]
+println(elemAtIndex)
 
-val bar: TypedList[Int, Nat2] = 1000 :: 2000 :: TypedNil
-foo concat bar
-// res: TypedList[Int, Nat7] = TypedList(11, 20, 34, 49, 54, 1000, 2000)
 
-foo.map(elem => s"Foo-" + elem)
-// res: TypedList[String, Nat5] = TypedList(Foo-11,Foo-20,Foo-34,Foo-49,Foo-54)
+// You can split into two lists mantaining typed size on both.
+val (ofSize2, ofSize6) = aListOfSizeEight.split[Nat2]
+println(ofSize2)
+println(ofSize6)
+
+// You can map over the list
+val stringList = aListOfSizeEight.map(i => s"cmhteixeira-$i")
+println(stringList)
+
+// You can concatenate two lists and the resulting list has correct typed size
+val firstList = "Foo" :: "Bar" :: "Baz" :: TypedNil
+val secondList = "Qux" :: "Quux" :: TypedNil
+val concatenatedList = firstList concat secondList
+println(concatenatedList)
+println(concatenatedList.get[Nat5])
+// println(concatenatedList.get[Nat6]) // uncomment line
+
+// You can flatmap the list, and the resulting list will have the correct size !! -> natural multiplication
+val someList = "Foo" :: "Bar" :: "Baz" :: TypedNil
+val result = someList.flatMap(i => s"$i-1" :: s"$i-2" :: TypedNil)
+println(result)
+println(result.get[Nat6])
+// println(result.get[Nat7])  // uncomment line
 
 ```

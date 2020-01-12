@@ -1,4 +1,4 @@
-package com.github.cmhteixeira.naturalnumbers
+package linkedlist.naturalnumbers
 
 import language.higherKinds
 

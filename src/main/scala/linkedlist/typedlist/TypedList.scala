@@ -1,6 +1,6 @@
-package com.github.cmhteixeira.typedlist
+package linkedlist.typedlist
 
-import com.github.cmhteixeira.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
+import linkedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
 
 sealed trait TypedList[+Element, Size <: Natural]{
   protected def _head: Element
