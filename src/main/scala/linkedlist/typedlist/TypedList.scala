@@ -2,6 +2,44 @@ package linkedlist.typedlist
 
 import linkedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
 
+/** A linked list with compile time size.
+ *
+ * @see package [[linkedlist.naturalnumbers]]
+ * @example {{{
+ * import linkedlist.naturalnumbers.Natural._
+ *
+ * val aListOfSizeEight = 1 :: 2 :: 3 :: 4 :: 5 :: 6 :: 7 :: 8 :: TypedNil
+ *
+ * // Compile error when accessing element outside bounds (as the bounds are known at compile time)
+ * aListOfSizeEight.get[Nat10]
+ *
+ * // Compile error when accessing head/tail of empty list
+ * val aListOfSizeOne = "Foo" :: TypedNil
+ * val anEmptyList = aListOfSizeOne.tail
+ *
+ * // You can get an element at a specific index
+ * val elemAtIndex = aListOfSizeEight.get[Nat3]
+ *
+ * // You can split into two lists maintaining typed size on both.
+ * val (ofSize2, ofSize6) = aListOfSizeEight.split[Nat2]
+ *
+ * // You can map over the list
+ * val stringList = aListOfSizeEight.map(i => s"cmhteixeira-$i")
+ *
+ * // You can concatenate two lists and the resulting list has correct typed size
+ * val firstList = "Foo" :: "Bar" :: "Baz" :: TypedNil
+ * val secondList = "Qux" :: "Quux" :: TypedNil
+ * val concatenatedList = firstList concat secondList
+ *
+ * // You can flatmap the list, and the resulting list will have the correct size !! -> natural multiplication
+ * val someList = "Foo" :: "Bar" :: "Baz" :: TypedNil
+ * val result = someList.flatMap(i => s"$i-1" :: s"$i-2" :: TypedNil)
+ * }}}
+ * @tparam Element Refers to the contents of the list, the same away as the `A` on the
+ *                 standard library's List[A]. It is covariant for the same reason
+ *                 as the List is.
+ * @tparam Size Natural number describing the size of the list.
+ */
 sealed trait TypedList[+Element, Size <: Natural]{
   protected def _head: Element
   def head[PhantomType >: Size <: Suc[_ <: Natural]]: Element = _head
@@ -47,12 +85,10 @@ sealed trait TypedList[+Element, Size <: Natural]{
   def count(predicate: Element => Boolean): Int
 }
 
-
-
 case object TypedNil extends TypedList[Nothing, Zero.type]{
-  override protected def _head: Nothing = throw new Exception("Boom!")
+  override protected def _head: Nothing = throw new Exception("This exception will never be thrown since it is 'protected' by a phantom type.")
 
-  override protected def _tail: TypedList[Nothing, Zero.type] = throw new Exception("Boom!")
+  override protected def _tail: TypedList[Nothing, Zero.type] = throw new Exception("This exception will never be thrown since it is 'protected' by a phantom type.")
 
   override def map[OtherType](f: Nothing => OtherType): TypedList[OtherType, Zero.type] = this
 
@@ -77,11 +113,11 @@ case object TypedNil extends TypedList[Nothing, Zero.type]{
     at: At,
     before: TypedList[Natural, At],
     after: TypedList[Natural, Zero.type]): (TypedList[Nothing, At], TypedList[Nothing, Zero.type]) =
-    throw new Exception("Boom!")
+    throw new Exception("This exception will never be thrown since it is 'protected' by type bounds and implicits.")
 
 
   override private [typedlist] def _get(goalIndex: Natural): Nothing =
-    throw new Exception("Boom!")
+    throw new Exception("This exception will never be thrown for any manipulations the user might do. Also, it is not on the API so the user cannot call it directly.")
 
   override def obtainElementAsString: Option[String] = None
 
@@ -89,8 +125,6 @@ case object TypedNil extends TypedList[Nothing, Zero.type]{
 
   override def contains[A >: Nothing](elem: A): Boolean = false
 }
-
-
 
 case class TypedCons[Element, Size <: Natural](
   override protected val _head: Element,
@@ -148,8 +182,17 @@ case class TypedCons[Element, Size <: Natural](
     head == elem || tail.contains(elem)
 }
 
+/**
+ * The [[TypedList.typedListOfNats]] [[TypedList.emptyList]] implicit functions, leverage iterative implicit resolution to
+ * automatically construct a typed list of naturals of the specified size.
+ *
+ * @note The typed list will have a size one greater than the value specified in the type parameter.
+ * @example {{{
+ *          val oneToEleven = implicitly[[TypedList[Natural, Nat10]]]
+ *          //res = TypedList(1, 2, 3, 4, 5, 6, 7, 8, 9, 11)
+ * }}}
+ */
 object TypedList {
-
   implicit def typedListOfNats[N <: Natural](implicit previousNatTypedList: TypedList[Natural, N], thisNat: Suc[N]): TypedList[Natural, Suc[N]] =
     previousNatTypedList :+ thisNat
 

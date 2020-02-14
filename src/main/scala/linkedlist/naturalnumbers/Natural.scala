@@ -2,6 +2,14 @@ package linkedlist.naturalnumbers
 
 import language.higherKinds
 
+/**
+ *  The natural numbers on the type system. Defined via type recursion.
+ *  Contains also the value definitions.
+ *
+ *  Operations defined on the types: summation, subtraction, and multiplication.
+ *  Operations defined on the values: summation, and subtraction.
+ *
+ */
 sealed trait Natural {
   type Plus[That <: Natural] <: Natural
   type Mult2[M <: Natural] <: Natural
@@ -65,6 +73,18 @@ case class Suc[N <: Natural](n: N) extends Natural {
   override def toInt: Int = 1 + n.toInt
 }
 
+/**
+ * Helper types aliases for the natural numbers.
+ *
+ * Also, the [[Natural.sucN]] and [[Natural.zero]] leverage recursive implicit resolution to provide
+ * an instance of a natural number (not the type, the actual number)
+ *
+ * @see The implicits at [[linkedlist.typedlist.TypedList]].
+ * @example {{{
+ *           val numberTen = implicitly[Nat10]
+ *           //res = 10
+ * }}}
+ */
 object Natural {
 
   implicit def sucN[N <: Natural](implicit prev: N): Suc[N] = Suc(prev)
