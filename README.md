@@ -1,3 +1,7 @@
+# Typed List &emsp; [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.12)
+
+Typed List is a Scala linked list with **typed** size. 
+
 ## Intro
 Blog post on the development [here](https://aerodatablog.wordpress.com/2019/03/03/a-typedlist-in-scala/)
 
