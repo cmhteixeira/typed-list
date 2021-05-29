@@ -3,23 +3,21 @@ package linkedlist.naturalnumbers
 import language.higherKinds
 
 /**
- *  The natural numbers on the type system. Defined via type recursion.
- *  Contains also the value definitions.
- *
- *  Operations defined on the types: summation, subtraction, and multiplication.
- *  Operations defined on the values: summation, and subtraction.
- *
- */
+  *  The natural numbers on the type system. Defined via type recursion.
+  *  Contains also the value definitions.
+  *
+  *  Operations defined on the types: summation, subtraction, and multiplication.
+  *  Operations defined on the values: summation, and subtraction.
+  *
+  */
 sealed trait Natural {
   type Plus[That <: Natural] <: Natural
   type Mult2[M <: Natural] <: Natural
   type Mult[M <: Natural] <: Natural
 
-
   type Previous <: Natural
   type Minus[M <: Natural] <: Natural
   type _Minus[M <: Natural] <: Natural
-
 
   // Methods
   def plus[M <: Natural](m: M): Plus[M]
@@ -42,7 +40,6 @@ case object Zero extends Natural {
   override type Minus[M <: Natural] = Zero.type
   override type _Minus[M <: Natural] = M
 
-
   // Methods
   override def plus[M <: Natural](m: M): M = m
 
@@ -57,7 +54,6 @@ case class Suc[N <: Natural](n: N) extends Natural {
   override type Plus[That <: Natural] = Suc[N#Plus[That]]
   override type Mult2[M <: Natural] = N#Mult2[M]#Plus[M]
   override type Mult[M <: Natural] = M#Plus[N#Mult[M]]
-
 
   override type Previous = N
   override type Minus[M <: Natural] = M#_Minus[Suc[N]]
@@ -74,17 +70,17 @@ case class Suc[N <: Natural](n: N) extends Natural {
 }
 
 /**
- * Helper types aliases for the natural numbers.
- *
- * Also, the [[Natural.sucN]] and [[Natural.zero]] leverage recursive implicit resolution to provide
- * an instance of a natural number (not the type, the actual number)
- *
- * @see The implicits at [[linkedlist.typedlist.TypedList]].
- * @example {{{
- *           val numberTen = implicitly[Nat10]
- *           //res = 10
- * }}}
- */
+  * Helper types aliases for the natural numbers.
+  *
+  * Also, the [[Natural.sucN]] and [[Natural.zero]] leverage recursive implicit resolution to provide
+  * an instance of a natural number (not the type, the actual number)
+  *
+  * @see The implicits at [[linkedlist.typedlist.TypedList]].
+  * @example {{{
+  *           val numberTen = implicitly[Nat10]
+  *           //res = 10
+  * }}}
+  */
 object Natural {
 
   implicit def sucN[N <: Natural](implicit prev: N): Suc[N] = Suc(prev)
