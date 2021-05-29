@@ -1,4 +1,4 @@
-# Typed List &emsp; [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.12)
+# Typed List &emsp; [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.12) [![Build Status](https://www.travis-ci.com/cmhteixeira/typed-list.svg?branch=master)](https://www.travis-ci.com/cmhteixeira/typed-list)
 
 Typed List is a Scala linked list with **typed** size. 
 
