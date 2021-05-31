@@ -1,5 +1,6 @@
-package linkedlist.naturalnumbers
+package com.cmhteixeira.typedlist.naturalnumbers
 
+import com.cmhteixeira.typedlist.TypedList
 import language.higherKinds
 
 /**
@@ -75,7 +76,7 @@ case class Suc[N <: Natural](n: N) extends Natural {
   * Also, the [[Natural.sucN]] and [[Natural.zero]] leverage recursive implicit resolution to provide
   * an instance of a natural number (not the type, the actual number)
   *
-  * @see The implicits at [[linkedlist.typedlist.TypedList]].
+  * @see The implicits at [[TypedList]].
   * @example {{{
   *           val numberTen = implicitly[Nat10]
   *           //res = 10

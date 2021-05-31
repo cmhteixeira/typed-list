@@ -1,4 +1,4 @@
-package linkedlist.naturalnumbers
+package com.cmhteixeira.typedlist.naturalnumbers
 
 import scala.annotation.implicitNotFound
 

@@ -1,6 +1,6 @@
-package linkedlist.typedlist
+package com.cmhteixeira.typedlist
 
-import linkedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
+import com.cmhteixeira.typedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
 
 /** A linked list with compile time size.
   *
