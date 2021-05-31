@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'scala'
     id 'maven-publish'
+    id 'signing'
     id "com.diffplug.gradle.spotless" version "${spotlessPluginVersion}"
     id "com.github.maiflai.scalatest" version "${scalaTestPluginVersion}"
 }
@@ -32,7 +33,7 @@ tasks.withType(GenerateModuleMetadata) {
 }
 
 // Creates a jar with the output of the 'scalaDoc' task
-task scaladocJar(type:Jar, dependsOn: scaladoc) {
+task scaladocJar(type: Jar, dependsOn: scaladoc) {
     archiveClassifier = 'javadoc'
     from scaladoc.destinationDir
 }
@@ -61,7 +62,19 @@ publishing {
             version = "${projectVersion}"
 
             pom {
+                name = "typed-list"
+                description = "Linked list with compile time size."
                 url = "https://github.com/cmhteixeira/typed-list"
+                scm {
+                    connection = "git@github.com:cmhteixeira/typed-list.git"
+                    url = "https://github.com/cmhteixeira/typed-list"
+                }
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "http://www.opensource.org/licenses/mit-license.php"
+                    }
+                }
                 developers {
                     developer {
                         id = "cmhteixeira"
@@ -76,6 +89,20 @@ publishing {
 
     repositories {
         maven {
+            name = "MavenCentral"
+            if (projectVersion.endsWith("SNAPSHOT")) {
+                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            } else {
+                url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            }
+
+            credentials {
+                username = System.getenv("ossrhUsername")
+                password = System.getenv("ossrhPassword")
+            }
+        }
+
+        maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/cmhteixeira/typed-list")
             credentials {
@@ -84,6 +111,19 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    def signingKey = System.getenv("signingKey")
+    def signingPassword = System.getenv("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+
+    sign publishing.publications.myStandardPublication
+}
+
+// We only want to sign artifacts if it is a release
+tasks.withType(Sign) {
+    onlyIf { !projectVersion.endsWith("SNAPSHOT") }
 }
 
 tasks.create(name: "printScalaVersion") {
@@ -104,7 +144,7 @@ for (coreTask in ["compileScala", "compileTestScala", "build", "test", "publish"
             tasks = ["printScalaVersion", "${coreTask}".toString()]
         }
     }
-    def taskAcrossVersions = allScalaVersions.collect{sv -> "${coreTask}${computeScalaMinorVersion(sv).replace(".", "")}".toString()}
+    def taskAcrossVersions = allScalaVersions.collect { sv -> "${coreTask}${computeScalaMinorVersion(sv).replace(".", "")}".toString() }
     tasks.create(name: "${coreTask}All", dependsOn: taskAcrossVersions) {
         description = "Runs tasks ${taskAcrossVersions.join(", ")}".toString()
     }
@@ -124,8 +164,6 @@ dependencies {
     compile("org.scala-lang:scala-library:$scalaVersion")
 
     compile("org.scala-lang:scala-compiler:$scalaVersion")
-    compile("org.scala-lang:scala-reflect:$scalaVersion")
-
 
     testCompile("org.scalatest:scalatest_$scalaMinorVersion:$scalaTest")
     testRuntime("org.pegdown:pegdown:$pegdown")
