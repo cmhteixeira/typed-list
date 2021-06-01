@@ -4,9 +4,9 @@ import com.cmhteixeira.typedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zer
 
 /** A linked list with compile time size.
   *
-  * @see package [[linkedlist.naturalnumbers]]
+  * @see package [[naturalnumbers]]
   * @example {{{
-  * import linkedlist.naturalnumbers.Natural._
+  * import com.cmhteixeira.naturalnumbers.Natural._
   *
   * val aListOfSizeEight = 1 :: 2 :: 3 :: 4 :: 5 :: 6 :: 7 :: 8 :: TypedNil
   *
@@ -50,7 +50,11 @@ sealed trait TypedList[+Element, Size <: Natural] {
   def map[OtherType](f: Element => OtherType): TypedList[OtherType, Size]
 
   def zip[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) => C): TypedList[C, Size]
+
   def zip2[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) => C): TypedList[C, Size]
+
+  def zip[OtherType](that: TypedList[OtherType, Size]): TypedList[(Element, OtherType), Size] =
+    zip(that, (a: Element, b: OtherType) => (a, b))
 
   def concat[OtherType >: Element, OtherSize <: Natural](
       that: TypedList[OtherType, OtherSize]
@@ -92,6 +96,14 @@ sealed trait TypedList[+Element, Size <: Natural] {
   def contains[A >: Element](elem: A): Boolean
 
   def count(predicate: Element => Boolean): Int
+
+  def toList: List[Element]
+
+  def size: Int = count(_ => true)
+
+  def collectFirst[B](p: PartialFunction[Element, B]): Option[B]
+
+  def forall(p: Element => Boolean): Boolean
 }
 
 case object TypedNil extends TypedList[Nothing, Zero.type] {
@@ -154,6 +166,12 @@ case object TypedNil extends TypedList[Nothing, Zero.type] {
   override def count(predicate: Nothing => Boolean): Int = 0
 
   override def contains[A >: Nothing](elem: A): Boolean = false
+
+  override def toList: List[Nothing] = Nil
+
+  override def collectFirst[B](p: PartialFunction[Nothing, B]): Option[B] = None
+
+  override def forall(p: Nothing => Boolean): Boolean = true
 }
 
 case class TypedCons[Element, Size <: Natural](
@@ -226,6 +244,13 @@ case class TypedCons[Element, Size <: Natural](
 
   override def contains[A >: Element](elem: A): Boolean =
     head == elem || tail.contains(elem)
+
+  override def toList: List[Element] = head +: tail.toList
+
+  override def collectFirst[B](p: PartialFunction[Element, B]): Option[B] =
+    if (p.isDefinedAt(head)) Some(p(head)) else tail.collectFirst(p)
+
+  override def forall(p: Element => Boolean): Boolean = p(head) && tail.forall(p)
 }
 
 /**
