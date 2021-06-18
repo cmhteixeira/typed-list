@@ -42,28 +42,106 @@ import com.cmhteixeira.typedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zer
   */
 sealed trait TypedList[+Element, Size <: Natural] {
   protected def _head: Element
+
+  /** Selects the first element of this list.
+    *
+    *  @return The first element of this list.
+    */
   def head[PhantomType >: Size <: Suc[_ <: Natural]]: Element = _head
 
   protected def _tail: TypedList[Element, Size#Previous]
+
+  /** The list without its first element.
+    *
+    *  @return The rest of the list without its first element..
+    */
   def tail[PhantomType >: Size <: Suc[_ <: Natural]]: TypedList[Element, Size#Previous] = _tail
 
+  /** Builds a new list by applying a function to all elements of this list.
+    *
+    * The new list has the same size as this list.
+    *
+    *  @param f The function to apply to each element.
+    *  @tparam OtherType The element type of the returned $coll.
+    *  @return A new list resulting from applying the given function `f`
+    *          to each element of this list and collecting the results.
+    */
   def map[OtherType](f: Element => OtherType): TypedList[OtherType, Size]
 
+  /** Returns a new list formed from this list and list `that` by applying function [[f]] to the elements
+    * of said lists at each position.
+    *
+    * @param that The list providing the second half of each result pair
+    * @param f The function to be applied to each pair containing the element of this list and `that` list for each
+    *          position.
+    * @tparam OtherType The type of the elements of the `that` list.
+    * @tparam C The return type of the function [[f]] that is applied to the pair of elements.
+    * @return A new list formed by applying a function to the tuple of elements from both lists at a given position.
+    */
   def zip[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) => C): TypedList[C, Size]
 
+  /** Returns a new list formed from this list and list `that` by applying function [[f]] to the elements
+    * of said lists at each position.
+    *
+    * @param that The list providing the second half of each result pair
+    * @param f The function to be applied to each pair containing the element of this list and `that` list for each
+    *          position.
+    * @tparam OtherType The type of the elements of the `that` list.
+    * @tparam C The return type of the function [[f]] that is applied to the pair of elements.
+    * @return A new list formed by applying a function to the tuple of elements from both lists at a given position.
+    */
   def zip2[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) => C): TypedList[C, Size]
 
+  /** Returns a new list formed from this list and another list of the same size
+    *  by combining corresponding elements in pairs.
+    *
+    * The length of the returned list is the same as both the this list and `that`
+    *
+    *  @param that The list providing the second half of each result pair
+    *  @tparam OtherType The type of the second half of the returned pairs
+    *  @return A new list containing pairs consisting of corresponding elements of this list and `that`.
+    */
   def zip[OtherType](that: TypedList[OtherType, Size]): TypedList[(Element, OtherType), Size] =
     zip(that, (a: Element, b: OtherType) => (a, b))
 
+  /** Returns a new list containing the elements from the left hand operand followed by the elements from the
+    *  right hand operand. The element type of the $coll is the most specific superclass encompassing
+    *  the element types of the two operands.
+    *
+    *  @param that The list to append.
+    *  @tparam OtherType The element type of the returned collection.
+    *  @return A new list which contains all elements of this list followed by all elements of `that`.
+    */
   def concat[OtherType >: Element, OtherSize <: Natural](
       that: TypedList[OtherType, OtherSize]
   ): TypedList[OtherType, Size#Plus[OtherSize]]
 
+  /** Builds a new list by applying a function to all elements of this list
+    *  and using the elements of the resulting collections.
+    *
+    *
+    *  @see [[flatMap2]]
+    *  @param f The function to apply to each element.
+    *  @tparam OtherType The element type of the returned collection.
+    *  @tparam OtherSize The size of the lists returning from applying the function to each element of this list.
+    *  @return A new list resulting from applying the given collection-valued function
+    *          `f` to each element of this list and concatenating the results.
+    */
   def flatMap[OtherType, OtherSize <: Natural](
       f: Element => TypedList[OtherType, OtherSize]
   ): TypedList[OtherType, Size#Mult[OtherSize]]
 
+  /** Builds a new list by applying a function to all elements of this list
+    *  and using the elements of the resulting collections.
+    *
+    *
+    *  @see [[flatMap]]
+    *  @param f The function to apply to each element.
+    *  @tparam OtherType The element type of the returned collection.
+    *  @tparam OtherSize The size of the lists returning from applying the function to each element of this list.
+    *  @return A new list resulting from applying the given collection-valued function
+    *          `f` to each element of this list and concatenating the results.
+    */
   def flatMap2[OtherType, OtherSize <: Natural](
       f: Element => TypedList[OtherType, OtherSize]
   ): TypedList[OtherType, Size#Mult2[OtherSize]]
@@ -72,12 +150,32 @@ sealed trait TypedList[+Element, Size <: Natural] {
       f: Element => TypedList[OtherType, OtherSize]
   ): TypedList[OtherType, Size#Mult2[OtherSize]]
 
+  /** A copy of this list with an element appended.
+    *
+    * @param elem The appended element
+    * @tparam A1 The element type of the returned list.
+    * @return A new list consisting of all elements of this list followed by `elem`.
+    */
   def :+[A1 >: Element](elem: A1): TypedList[A1, Suc[Size]]
 
+  /** Adds an element at the beginning of this list.
+    *
+    *  @param elem The element to prepend.
+    *  @return A list which contains `elem` as first element and which continues with this list.
+    */
   def ::[A1 >: Element](elem: A1): TypedList[A1, Suc[Size]]
 
+  /** Returns new list with elements in reversed order.
+    *
+    *  @return A new list with all elements of this list in reversed order.
+    */
   def reverse: TypedList[Element, Size]
 
+  /** Splits the list into a prefix/suffix pair at a given position.
+    *
+    *  @tparam At Position at which to split.
+    *  @return A pair of lists consisting of the first `At` elements of this list, and the other elements.
+    */
   def split[At <: Suc[_ <: Natural]](
       implicit guaranteeIndexWithinBounds: At LowerOrEqual Size#Previous,
       at: At,
@@ -85,24 +183,60 @@ sealed trait TypedList[+Element, Size <: Natural] {
       after: TypedList[Natural, Size#Minus[At]]
   ): (TypedList[Element, At], TypedList[Element, Size#Minus[At]])
 
+  /** Returns the element of the list at a given position.
+    *
+    *  @tparam Index Position of element to be returned
+    *  @return The element to be returned
+    */
   def get[Index <: Suc[_ <: Natural]](implicit n: Index, guaranteeIndexWithinBounds: Index LowerOrEqual Size): Element =
     _get(n)
 
   private[typedlist] def _get(goalIndex: Natural): Element
 
   override final def toString: String = obtainElementAsString.fold("TypedList()")("TypedList(" + _ + ")")
+
   def obtainElementAsString: Option[String]
 
+  /** Tests whether this list contains a given value as an element.
+    *
+    *  @param elem  The element to test.
+    *  @return `true` if this list has an element that is equal (as determined by `==`) to `elem`, `false` otherwise.
+    */
   def contains[A >: Element](elem: A): Boolean
 
+  /** Counts the number of elements in the list which satisfy a predicate.
+    *
+    *  @param predicate The predicate used to test elements.
+    *  @return The number of elements satisfying the predicate `predicate`
+    */
   def count(predicate: Element => Boolean): Int
 
+  /** Transform this typed list into a standard library list.
+    *
+    * @return A a new __normal__ list with the same elements as this list.
+    */
   def toList: List[Element]
 
+  /** The size of this list.
+    *
+    *  @return The number of elements in this list.
+    */
   def size: Int = count(_ => true)
 
+  /** Finds the first element of the list for which the given partial
+    * function is defined, and applies the partial function to it.
+    *
+    *  @param p The partial function
+    *  @return An option value containing `p` applied to the first value for which it is defined, or [[None]] if none exists.
+    */
   def collectFirst[B](p: PartialFunction[Element, B]): Option[B]
 
+  /** Tests whether a predicate holds for all elements of this list.
+    *
+    *  @param p The predicate used to test elements.
+    *  @return `true` if this this is empty or the given predicate `p` holds for all
+    *          elements of this this, otherwise `false`.
+    */
   def forall(p: Element => Boolean): Boolean
 }
 

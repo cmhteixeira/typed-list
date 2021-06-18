@@ -1,6 +1,5 @@
 package com.cmhteixeira.typedlist.naturalnumbers
 
-import com.cmhteixeira.typedlist.TypedList
 import language.higherKinds
 
 /**

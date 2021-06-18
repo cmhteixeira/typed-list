@@ -3,10 +3,8 @@
 Typed List is a Scala linked list with **typed** size. 
 
 ## Intro
-Blog post on the development [here](https://aerodatablog.wordpress.com/2019/03/03/a-typedlist-in-scala/)
 
-A typed list in Scala: a list whose size is known at compile time.  
-No 3rd party libraries. 
+A typed list in Scala: a list whose size is known at compile time.
 
 ## Usage
 
