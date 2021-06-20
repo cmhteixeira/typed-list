@@ -1,7 +1,7 @@
 package com.cmh.teixeira.typedlist
 
 import com.cmhteixeira.typedlist.TypedNil
-import com.cmhteixeira.typedlist.naturalnumbers.Natural.{Nat0, Nat1, Nat2, Nat3, Nat5}
+import com.cmhteixeira.typedlist.naturalnumbers.Natural.{Nat1, Nat3}
 import org.scalatest.{FlatSpecLike, Matchers}
 
 class TypedListSpec extends FlatSpecLike with Matchers {

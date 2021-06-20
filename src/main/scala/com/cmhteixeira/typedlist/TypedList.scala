@@ -40,7 +40,7 @@ import com.cmhteixeira.typedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zer
   *                 as the List is.
   * @tparam Size Natural number describing the size of the list.
   */
-sealed trait TypedList[+Element, Size <: Natural] {
+sealed trait TypedList[Size <: Natural, +Element] {
   protected def _head: Element
 
   /** Selects the first element of this list.
@@ -49,13 +49,13 @@ sealed trait TypedList[+Element, Size <: Natural] {
     */
   def head[PhantomType >: Size <: Suc[_ <: Natural]]: Element = _head
 
-  protected def _tail: TypedList[Element, Size#Previous]
+  protected def _tail: TypedList[Size#Previous, Element]
 
   /** The list without its first element.
     *
     *  @return The rest of the list without its first element..
     */
-  def tail[PhantomType >: Size <: Suc[_ <: Natural]]: TypedList[Element, Size#Previous] = _tail
+  def tail[PhantomType >: Size <: Suc[_ <: Natural]]: TypedList[Size#Previous, Element] = _tail
 
   /** Builds a new list by applying a function to all elements of this list.
     *
@@ -66,7 +66,7 @@ sealed trait TypedList[+Element, Size <: Natural] {
     *  @return A new list resulting from applying the given function `f`
     *          to each element of this list and collecting the results.
     */
-  def map[OtherType](f: Element => OtherType): TypedList[OtherType, Size]
+  def map[OtherType](f: Element => OtherType): TypedList[Size, OtherType]
 
   /** Returns a new list formed from this list and list `that` by applying function [[f]] to the elements
     * of said lists at each position.
@@ -78,7 +78,7 @@ sealed trait TypedList[+Element, Size <: Natural] {
     * @tparam C The return type of the function [[f]] that is applied to the pair of elements.
     * @return A new list formed by applying a function to the tuple of elements from both lists at a given position.
     */
-  def zip[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) => C): TypedList[C, Size]
+  def zip[OtherType, C](that: TypedList[Size, OtherType], f: (Element, OtherType) => C): TypedList[Size, C]
 
   /** Returns a new list formed from this list and list `that` by applying function [[f]] to the elements
     * of said lists at each position.
@@ -90,7 +90,7 @@ sealed trait TypedList[+Element, Size <: Natural] {
     * @tparam C The return type of the function [[f]] that is applied to the pair of elements.
     * @return A new list formed by applying a function to the tuple of elements from both lists at a given position.
     */
-  def zip2[OtherType, C](that: TypedList[OtherType, Size], f: (Element, OtherType) => C): TypedList[C, Size]
+  def zip2[OtherType, C](that: TypedList[Size, OtherType], f: (Element, OtherType) => C): TypedList[Size, C]
 
   /** Returns a new list formed from this list and another list of the same size
     *  by combining corresponding elements in pairs.
@@ -101,7 +101,7 @@ sealed trait TypedList[+Element, Size <: Natural] {
     *  @tparam OtherType The type of the second half of the returned pairs
     *  @return A new list containing pairs consisting of corresponding elements of this list and `that`.
     */
-  def zip[OtherType](that: TypedList[OtherType, Size]): TypedList[(Element, OtherType), Size] =
+  def zip[OtherType](that: TypedList[Size, OtherType]): TypedList[Size, (Element, OtherType)] =
     zip(that, (a: Element, b: OtherType) => (a, b))
 
   /** Returns a new list containing the elements from the left hand operand followed by the elements from the
@@ -113,8 +113,8 @@ sealed trait TypedList[+Element, Size <: Natural] {
     *  @return A new list which contains all elements of this list followed by all elements of `that`.
     */
   def concat[OtherType >: Element, OtherSize <: Natural](
-      that: TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Size#Plus[OtherSize]]
+      that: TypedList[OtherSize, OtherType]
+  ): TypedList[Size#Plus[OtherSize], OtherType]
 
   /** Builds a new list by applying a function to all elements of this list
     *  and using the elements of the resulting collections.
@@ -128,8 +128,8 @@ sealed trait TypedList[+Element, Size <: Natural] {
     *          `f` to each element of this list and concatenating the results.
     */
   def flatMap[OtherType, OtherSize <: Natural](
-      f: Element => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Size#Mult[OtherSize]]
+      f: Element => TypedList[OtherSize, OtherType]
+  ): TypedList[Size#Mult[OtherSize], OtherType]
 
   /** Builds a new list by applying a function to all elements of this list
     *  and using the elements of the resulting collections.
@@ -143,12 +143,12 @@ sealed trait TypedList[+Element, Size <: Natural] {
     *          `f` to each element of this list and concatenating the results.
     */
   def flatMap2[OtherType, OtherSize <: Natural](
-      f: Element => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Size#Mult2[OtherSize]]
+      f: Element => TypedList[OtherSize, OtherType]
+  ): TypedList[Size#Mult2[OtherSize], OtherType]
 
-  private[typedlist] def _flatMap2Internal[OtherType, OtherSize <: Natural](
-      f: Element => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Size#Mult2[OtherSize]]
+  private[typedlist] def _flatMap2Internal[OtherSize <: Natural, OtherType](
+      f: Element => TypedList[OtherSize, OtherType]
+  ): TypedList[Size#Mult2[OtherSize], OtherType]
 
   /** A copy of this list with an element appended.
     *
@@ -156,20 +156,20 @@ sealed trait TypedList[+Element, Size <: Natural] {
     * @tparam A1 The element type of the returned list.
     * @return A new list consisting of all elements of this list followed by `elem`.
     */
-  def :+[A1 >: Element](elem: A1): TypedList[A1, Suc[Size]]
+  def :+[A1 >: Element](elem: A1): TypedList[Suc[Size], A1]
 
   /** Adds an element at the beginning of this list.
     *
     *  @param elem The element to prepend.
     *  @return A list which contains `elem` as first element and which continues with this list.
     */
-  def ::[A1 >: Element](elem: A1): TypedList[A1, Suc[Size]]
+  def ::[A1 >: Element](elem: A1): TypedList[Suc[Size], A1]
 
   /** Returns new list with elements in reversed order.
     *
     *  @return A new list with all elements of this list in reversed order.
     */
-  def reverse: TypedList[Element, Size]
+  def reverse: TypedList[Size, Element]
 
   /** Splits the list into a prefix/suffix pair at a given position.
     *
@@ -179,9 +179,9 @@ sealed trait TypedList[+Element, Size <: Natural] {
   def split[At <: Suc[_ <: Natural]](
       implicit guaranteeIndexWithinBounds: At LowerOrEqual Size#Previous,
       at: At,
-      before: TypedList[Natural, At],
-      after: TypedList[Natural, Size#Minus[At]]
-  ): (TypedList[Element, At], TypedList[Element, Size#Minus[At]])
+      before: TypedList[At, Natural],
+      after: TypedList[Size#Minus[At], Natural]
+  ): (TypedList[At, Element], TypedList[Size#Minus[At], Element])
 
   /** Returns the element of the list at a given position.
     *
@@ -240,54 +240,54 @@ sealed trait TypedList[+Element, Size <: Natural] {
   def forall(p: Element => Boolean): Boolean
 }
 
-case object TypedNil extends TypedList[Nothing, Zero.type] {
+case object TypedNil extends TypedList[Zero.type, Nothing] {
 
   override protected def _head: Nothing =
     throw new Exception("This exception will never be thrown since it is 'protected' by a phantom type.")
 
-  override protected def _tail: TypedList[Nothing, Zero.type] =
+  override protected def _tail: TypedList[Zero.type, Nothing] =
     throw new Exception("This exception will never be thrown since it is 'protected' by a phantom type.")
 
-  override def map[OtherType](f: Nothing => OtherType): TypedList[OtherType, Zero.type] = this
+  override def map[OtherType](f: Nothing => OtherType): TypedList[Zero.type, OtherType] = this
 
   override def zip[OtherType, C](
-      that: TypedList[OtherType, Zero.type],
+      that: TypedList[Zero.type, OtherType],
       f: (Nothing, OtherType) => C
-  ): TypedList[C, Zero.type] = this
+  ): TypedList[Zero.type, C] = this
 
   override def zip2[OtherType, C](
-      that: TypedList[OtherType, Zero.type],
+      that: TypedList[Zero.type, OtherType],
       f: (Nothing, OtherType) => C
-  ): TypedList[C, Zero.type] = this
+  ): TypedList[Zero.type, C] = this
 
   override def concat[OtherType >: Nothing, OtherSize <: Natural](
-      that: TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, OtherSize] = that
+      that: TypedList[OtherSize, OtherType]
+  ): TypedList[OtherSize, OtherType] = that
 
   override def flatMap[OtherType, OtherSize <: Natural](
-      f: Nothing => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Zero.type] = this
+      f: Nothing => TypedList[OtherSize, OtherType]
+  ): TypedList[Zero.type, OtherType] = this
 
   override def flatMap2[OtherType, OtherSize <: Natural](
-      f: Nothing => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Zero.type] = this
+      f: Nothing => TypedList[OtherSize, OtherType]
+  ): TypedList[Zero.type, OtherType] = this
 
-  override private[typedlist] def _flatMap2Internal[OtherType, OtherSize <: Natural](
-      f: Nothing => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Zero.type] = this
+  override private[typedlist] def _flatMap2Internal[OtherSize <: Natural, OtherType](
+      f: Nothing => TypedList[OtherSize, OtherType]
+  ): TypedList[Zero.type, OtherType] = this
 
-  override def :+[A1 >: Nothing](elem: A1): TypedList[A1, Suc[Zero.type]] = TypedCons(elem, TypedNil)
+  override def :+[A1 >: Nothing](elem: A1): TypedList[Suc[Zero.type], A1] = TypedCons(elem, TypedNil)
 
-  override def ::[A1 >: Nothing](elem: A1): TypedList[A1, Suc[Zero.type]] = TypedCons(elem, TypedNil)
+  override def ::[A1 >: Nothing](elem: A1): TypedList[Suc[Zero.type], A1] = TypedCons(elem, TypedNil)
 
-  override def reverse: TypedList[Nothing, Zero.type] = this
+  override def reverse: TypedList[Zero.type, Nothing] = this
 
   override def split[At <: Suc[_ <: Natural]](
       implicit guaranteeIndexWithinBounds: LowerOrEqual[At, Zero.type],
       at: At,
-      before: TypedList[Natural, At],
-      after: TypedList[Natural, Zero.type]
-  ): (TypedList[Nothing, At], TypedList[Nothing, Zero.type]) =
+      before: TypedList[At, Natural],
+      after: TypedList[Zero.type, Natural]
+  ): (TypedList[At, Nothing], TypedList[Zero.type, Nothing]) =
     throw new Exception("This exception will never be thrown since it is 'protected' by type bounds and implicits.")
 
   override private[typedlist] def _get(goalIndex: Natural): Nothing =
@@ -308,59 +308,59 @@ case object TypedNil extends TypedList[Nothing, Zero.type] {
   override def forall(p: Nothing => Boolean): Boolean = true
 }
 
-case class TypedCons[Element, Size <: Natural](
+case class TypedCons[Size <: Natural, Element](
     override protected val _head: Element,
-    override protected val _tail: TypedList[Element, Size]
-) extends TypedList[Element, Suc[Size]] {
+    override protected val _tail: TypedList[Size, Element]
+) extends TypedList[Suc[Size], Element] {
 
-  override def map[OtherType](f: Element => OtherType): TypedList[OtherType, Suc[Size]] =
+  override def map[OtherType](f: Element => OtherType): TypedList[Suc[Size], OtherType] =
     TypedCons(f(head), tail.map(f))
 
   override def zip[OtherType, C](
-      that: TypedList[OtherType, Suc[Size]],
+      that: TypedList[Suc[Size], OtherType],
       f: (Element, OtherType) => C
-  ): TypedList[C, Suc[Size]] = that match {
+  ): TypedList[Suc[Size], C] = that match {
     case TypedCons(thatHead, thatTail) => TypedCons(f(head, thatHead), tail.zip(thatTail, f))
   }
 
   override def zip2[OtherType, C](
-      that: TypedList[OtherType, Suc[Size]],
+      that: TypedList[Suc[Size], OtherType],
       f: (Element, OtherType) => C
-  ): TypedList[C, Suc[Size]] =
+  ): TypedList[Suc[Size], C] =
     TypedCons(f(head, that.head), tail.zip2(that.tail, f))
 
   override def concat[OtherType >: Element, OtherSize <: Natural](
-      that: TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Suc[Size#Plus[OtherSize]]] =
+      that: TypedList[OtherSize, OtherType]
+  ): TypedList[Suc[Size#Plus[OtherSize]], OtherType] =
     TypedCons(head, tail.concat(that))
 
   override def flatMap[OtherType, OtherSize <: Natural](
-      f: Element => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, OtherSize#Plus[Size#Mult[OtherSize]]] =
+      f: Element => TypedList[OtherSize, OtherType]
+  ): TypedList[OtherSize#Plus[Size#Mult[OtherSize]], OtherType] =
     f(head) concat tail.flatMap(f)
 
   override def flatMap2[OtherType, OtherSize <: Natural](
-      f: Element => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Size#Mult2[OtherSize]#Plus[OtherSize]] =
+      f: Element => TypedList[OtherSize, OtherType]
+  ): TypedList[Size#Mult2[OtherSize]#Plus[OtherSize], OtherType] =
     _flatMap2Internal(f).reverse
 
-  override private[typedlist] def _flatMap2Internal[OtherType, OtherSize <: Natural](
-      f: Element => TypedList[OtherType, OtherSize]
-  ): TypedList[OtherType, Size#Mult2[OtherSize]#Plus[OtherSize]] =
+  override private[typedlist] def _flatMap2Internal[OtherSize <: Natural, OtherType](
+      f: Element => TypedList[OtherSize, OtherType]
+  ): TypedList[Size#Mult2[OtherSize]#Plus[OtherSize], OtherType] =
     tail._flatMap2Internal(f) concat f(head)
 
-  override def reverse: TypedList[Element, Suc[Size]] = tail.reverse :+ head
+  override def reverse: TypedList[Suc[Size], Element] = tail.reverse :+ head
 
-  override def :+[A1 >: Element](elem: A1): TypedCons[A1, Suc[Size]] = TypedCons(head, tail.:+(elem))
+  override def :+[A1 >: Element](elem: A1): TypedCons[Suc[Size], A1] = TypedCons(head, tail.:+(elem))
 
-  override def ::[A1 >: Element](elem: A1): TypedList[A1, Suc[Suc[Size]]] = TypedCons(elem, this)
+  override def ::[A1 >: Element](elem: A1): TypedList[Suc[Suc[Size]], A1] = TypedCons(elem, this)
 
   override def split[At <: Suc[_ <: Natural]](
       implicit guaranteeIndexWithinBounds: At LowerOrEqual Size,
       at: At,
-      before: TypedList[Natural, At],
-      after: TypedList[Natural, Suc[Size]#Minus[At]]
-  ): (TypedList[Element, At], TypedList[Element, Suc[Size]#Minus[At]]) =
+      before: TypedList[At, Natural],
+      after: TypedList[Suc[Size]#Minus[At], Natural]
+  ): (TypedList[At, Element], TypedList[Suc[Size]#Minus[At], Element]) =
     (before.map(_get), after.map(i => _get(i.plus(at))))
 
   override private[typedlist] def _get(goalIndex: Natural): Element = {
@@ -393,17 +393,17 @@ case class TypedCons[Element, Size <: Natural](
   *
   * @note The typed list will have a size one greater than the value specified in the type parameter.
   * @example {{{
-  *          val oneToEleven = implicitly[[TypedList[Natural, Nat10]]]
+  *          val oneToEleven = implicitly[[TypedList[Nat10, Natural]]]
   *          //res = TypedList(1, 2, 3, 4, 5, 6, 7, 8, 9, 11)
   * }}}
   */
 object TypedList {
 
   implicit def typedListOfNats[N <: Natural](
-      implicit previousNatTypedList: TypedList[Natural, N],
+      implicit previousNatTypedList: TypedList[N, Natural],
       thisNat: Suc[N]
-  ): TypedList[Natural, Suc[N]] =
+  ): TypedList[Suc[N], Natural] =
     previousNatTypedList :+ thisNat
 
-  implicit def emptyList[A]: TypedList[A, Zero.type] = TypedNil
+  implicit def emptyList[A]: TypedList[Zero.type, A] = TypedNil
 }
