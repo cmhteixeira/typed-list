@@ -1,5 +1,7 @@
 package com.cmhteixeira.typedlist
 
+import cats.{Applicative, Eval, Traverse}
+import com.cmhteixeira.typedlist.naturalnumbers.Natural.Nat1
 import com.cmhteixeira.typedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
 
 /** A linked list with compile time size.
@@ -397,7 +399,7 @@ case class TypedCons[Size <: Natural, Element](
   *          //res = TypedList(1, 2, 3, 4, 5, 6, 7, 8, 9, 11)
   * }}}
   */
-object TypedList {
+object TypedList extends support4cats.Implicits {
 
   implicit def typedListOfNats[N <: Natural](
       implicit previousNatTypedList: TypedList[N, Natural],
