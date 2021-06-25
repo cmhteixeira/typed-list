@@ -1,5 +1,7 @@
 package com.cmhteixeira.typedlist
 
+import cats.data.NonEmptyList
+import com.cmhteixeira.typedlist.naturalnumbers.Natural.Nat1
 import com.cmhteixeira.typedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
 
 /** A linked list with compile time size.
@@ -398,6 +400,30 @@ case class TypedCons[Size <: Natural, Element](
   * }}}
   */
 object TypedList extends support4cats.Implicits {
+
+  def empty[A]: TypedList[Zero.type, A] = TypedNil
+
+  def fromList[Size <: Natural, A](list: NonEmptyList[A])(
+      implicit t: TypedList[Size, Natural]
+  ): Option[TypedList[Size, A]] = fromList(list.toList)
+
+  def fromElems[Size <: Natural, A](
+      elems: A*
+  )(implicit t: TypedList[Size, Natural]): Option[TypedList[Size, A]] =
+    fromList(elems.toList)
+
+  def fromList[Size <: Natural, A](
+      list: List[A]
+  )(implicit t: TypedList[Size, Natural]): Option[TypedList[Size, A]] = {
+    (list, t) match {
+      case (Nil, TypedNil) => Some(TypedNil)
+      case (Nil, TypedCons(_head, _tail)) => None
+      case (head :: tail, TypedNil) => None
+      case (head :: tail, TypedCons(_, _tail)) =>
+        fromList[Size#Minus[Nat1], A](tail)(_tail)
+          .map(o => head :: o)
+    }
+  }
 
   implicit def typedListOfNats[N <: Natural](
       implicit previousNatTypedList: TypedList[N, Natural],

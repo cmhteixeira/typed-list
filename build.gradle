@@ -14,6 +14,9 @@ ext {
     scalaTest = "3.0.9"
     catsCore = "2.0.0"
     kindProjectorPlugin = "0.13.0"
+    scalaTestPlusScalaCheck = "3.2.9.0"
+    disciplineScalaTest = "2.1.5"
+    flexMark = "0.35.10"
 }
 
 static def computeScalaMinorVersion(String scalaVersion) {
@@ -174,6 +177,10 @@ dependencies {
     scalaCompilerPlugin "org.typelevel:kind-projector_${scalaVersion}:${kindProjectorPlugin}"
 
     testCompile("org.scalatest:scalatest_$scalaMinorVersion:$scalaTest")
+    testCompile("org.typelevel:cats-laws_$scalaMinorVersion:$catsCore")
+    testCompile("org.typelevel:discipline-scalatest_$scalaMinorVersion:$disciplineScalaTest")
+    testCompile("org.scalatestplus:scalacheck-1-15_$scalaMinorVersion:$scalaTestPlusScalaCheck")
+    testRuntime("com.vladsch.flexmark:flexmark-all:$flexMark")
     testRuntime("org.pegdown:pegdown:$pegdown")
 }
 

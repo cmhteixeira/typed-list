@@ -2,9 +2,10 @@ package com.cmh.teixeira.typedlist
 
 import com.cmhteixeira.typedlist.TypedNil
 import com.cmhteixeira.typedlist.naturalnumbers.Natural.{Nat1, Nat3}
-import org.scalatest.{FunSuiteLike, Matchers}
+import org.scalatest.funsuite.AnyFunSuiteLike
+import org.scalatest.matchers.should.Matchers
 
-class TypedListSpec extends FunSuiteLike with Matchers {
+class TypedListSpec extends AnyFunSuiteLike with Matchers {
   test("A non-empty list can be transformed into a standard list") {
     val list3Elements = "Foo" :: "Bar" :: "Baz" :: TypedNil
     list3Elements.toList shouldBe List("Foo", "Bar", "Baz")
