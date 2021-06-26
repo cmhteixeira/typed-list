@@ -13,6 +13,7 @@ ext {
     pegdown = "1.4.2"
     scalaTest = "3.0.9"
     catsCore = "2.0.0"
+    kindProjectorPlugin = "0.13.0"
 }
 
 static def computeScalaMinorVersion(String scalaVersion) {
@@ -161,12 +162,23 @@ spotless {
     }
 }
 
+configurations {
+    scalaCompilerPlugin
+}
+
 dependencies {
     compile("org.scala-lang:scala-library:$scalaVersion")
 
     compile("org.scala-lang:scala-compiler:$scalaVersion")
     compile("org.typelevel:cats-core_$scalaMinorVersion:$catsCore")
+    scalaCompilerPlugin "org.typelevel:kind-projector_${scalaVersion}:${kindProjectorPlugin}"
 
     testCompile("org.scalatest:scalatest_$scalaMinorVersion:$scalaTest")
     testRuntime("org.pegdown:pegdown:$pegdown")
+}
+
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.additionalParameters = [
+            "-Xplugin:" + configurations.scalaCompilerPlugin.asPath,
+    ]
 }
