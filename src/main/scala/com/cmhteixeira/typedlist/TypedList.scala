@@ -1,7 +1,5 @@
 package com.cmhteixeira.typedlist
 
-import cats.{Applicative, Eval, Traverse}
-import com.cmhteixeira.typedlist.naturalnumbers.Natural.Nat1
 import com.cmhteixeira.typedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
 
 /** A linked list with compile time size.
