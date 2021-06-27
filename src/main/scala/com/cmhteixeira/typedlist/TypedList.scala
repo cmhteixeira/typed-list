@@ -70,26 +70,26 @@ sealed trait TypedList[Size <: Natural, +Element] {
     */
   def map[OtherType](f: Element => OtherType): TypedList[Size, OtherType]
 
-  /** Returns a new list formed from this list and list `that` by applying function [[f]] to the elements
+  /** Returns a new list formed from this list and list `that` by applying function `f` to the elements
     * of said lists at each position.
     *
     * @param that The list providing the second half of each result pair
     * @param f The function to be applied to each pair containing the element of this list and `that` list for each
     *          position.
     * @tparam OtherType The type of the elements of the `that` list.
-    * @tparam C The return type of the function [[f]] that is applied to the pair of elements.
+    * @tparam C The return type of the function `f` that is applied to the pair of elements.
     * @return A new list formed by applying a function to the tuple of elements from both lists at a given position.
     */
   def zip[OtherType, C](that: TypedList[Size, OtherType], f: (Element, OtherType) => C): TypedList[Size, C]
 
-  /** Returns a new list formed from this list and list `that` by applying function [[f]] to the elements
+  /** Returns a new list formed from this list and list `that` by applying function `f` to the elements
     * of said lists at each position.
     *
     * @param that The list providing the second half of each result pair
     * @param f The function to be applied to each pair containing the element of this list and `that` list for each
     *          position.
     * @tparam OtherType The type of the elements of the `that` list.
-    * @tparam C The return type of the function [[f]] that is applied to the pair of elements.
+    * @tparam C The return type of the function `f` that is applied to the pair of elements.
     * @return A new list formed by applying a function to the tuple of elements from both lists at a given position.
     */
   def zip2[OtherType, C](that: TypedList[Size, OtherType], f: (Element, OtherType) => C): TypedList[Size, C]
@@ -107,7 +107,7 @@ sealed trait TypedList[Size <: Natural, +Element] {
     zip(that, (a: Element, b: OtherType) => (a, b))
 
   /** Returns a new list containing the elements from the left hand operand followed by the elements from the
-    *  right hand operand. The element type of the $coll is the most specific superclass encompassing
+    *  right hand operand. The element type of the list is the most specific superclass encompassing
     *  the element types of the two operands.
     *
     *  @param that The list to append.
@@ -215,7 +215,7 @@ sealed trait TypedList[Size <: Natural, +Element] {
 
   /** Transform this typed list into a standard library list.
     *
-    * @return A a new __normal__ list with the same elements as this list.
+    * @return A new __normal__ list with the same elements as this list.
     */
   def toList: List[Element]
 
@@ -417,7 +417,7 @@ object TypedList extends support4cats.Implicits {
   )(implicit t: TypedList[Size, Natural]): Option[TypedList[Size, A]] = {
     (list, t) match {
       case (Nil, TypedNil) => Some(TypedNil)
-      case (Nil, TypedCons(_head, _tail)) => None
+      case (Nil, TypedCons(_, _)) => None
       case (head :: tail, TypedNil) => None
       case (head :: tail, TypedCons(_, _tail)) =>
         fromList[Size#Minus[Nat1], A](tail)(_tail)

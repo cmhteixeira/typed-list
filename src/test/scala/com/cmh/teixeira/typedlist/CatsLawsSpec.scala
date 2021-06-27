@@ -1,6 +1,6 @@
 package com.cmh.teixeira.typedlist
 
-import cats.{Eq, Functor}
+import cats.Eq
 import cats.laws.discipline.{FoldableTests, FunctorTests, TraverseTests}
 import com.cmhteixeira.typedlist.TypedList
 import com.cmhteixeira.typedlist.naturalnumbers.Natural
@@ -29,18 +29,6 @@ class CatsLawsSpec
 }
 
 object CatsLawsSpec {
-
-  implicit def arbitrary[Size <: Natural, A: Gen](
-      implicit size: Size,
-      list: TypedList[Size, Natural]
-  ): Arbitrary[TypedList[Size, A]] =
-    Arbitrary(for {
-      normalList <- Gen.listOfN(size.toInt, implicitly[Gen[A]])
-      typedList <- TypedList.fromList[Size, A](normalList) match {
-        case Some(value) => Gen.const(value)
-        case None => Gen.fail
-      }
-    } yield typedList)
 
   implicit def eqInstance[Size <: Natural, A]: Eq[TypedList[Size, A]] = new Eq[TypedList[Size, A]] {
     override def eqv(x: TypedList[Size, A], y: TypedList[Size, A]): Boolean = x == y
