@@ -240,6 +240,36 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *          elements of this this, otherwise `false`.
     */
   def forall(p: Element => Boolean): Boolean
+
+  /** A copy of this list with one single replaced element.
+    *
+    *  @param elem The replacing element
+    *  @tparam B The element type of the returned list.
+    *  @tparam Index The index of the replacement.
+    *  @return A new list which is a copy of this list with the element at position `Index` replaced by `elem`.
+    */
+  def updated[Index <: Natural, B >: Element](elem: B)(
+      implicit guaranteeIndexWithinBounds: Index LowerOrEqual Size,
+      index: Index
+  ): TypedList[Size, B]
+
+  private[typedlist] def updatedHelper[B >: Element](
+      elem: B,
+      currentIndex: Int,
+      targetIndex: Int
+  ): TypedList[Size, B]
+
+  /** Optionally selects the first element.
+    *
+    *  @return The first element of this list if it is nonempty, `None` if it is empty.
+    */
+  def headOption: Option[Element]
+
+  /** Optionally selects the last element.
+    *
+    *  @return The last element of this list if it is nonempty, `None` if it is empty.
+    */
+  def lastOption: Option[Element]
 }
 
 case object TypedNil extends TypedList[Zero.type, Nothing] {
@@ -308,6 +338,21 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
   override def collectFirst[B](p: PartialFunction[Nothing, B]): Option[B] = None
 
   override def forall(p: Nothing => Boolean): Boolean = true
+
+  override def updated[Index <: Natural, B >: Nothing](elem: B)(
+      implicit guaranteeIndexWithinBounds: LowerOrEqual[Index, Zero.type],
+      index: Index
+  ): TypedList[Zero.type, B] = this
+
+  override private[typedlist] def updatedHelper[B >: Nothing](
+      elem: B,
+      currentIndex: Int,
+      targetIndex: Int
+  ): TypedList[Zero.type, B] = this
+
+  override def headOption: Option[Nothing] = None
+
+  override def lastOption: Option[Nothing] = None
 }
 
 case class TypedCons[Size <: Natural, Element](
@@ -387,6 +432,27 @@ case class TypedCons[Size <: Natural, Element](
     if (p.isDefinedAt(head)) Some(p(head)) else tail.collectFirst(p)
 
   override def forall(p: Element => Boolean): Boolean = p(head) && tail.forall(p)
+
+  override def updated[Index <: Natural, B >: Element](elem: B)(
+      implicit guaranteeIndexWithinBounds: LowerOrEqual[Index, Suc[Size]],
+      index: Index
+  ): TypedList[Suc[Size], B] = updatedHelper(elem, 1, index.toInt)
+
+  override private[typedlist] def updatedHelper[B >: Element](
+      elem: B,
+      currentIndex: Int,
+      targetIndex: Int
+  ): TypedList[Suc[Size], B] =
+    if (currentIndex < targetIndex) TypedCons(head, _tail.updatedHelper(elem, currentIndex + 1, targetIndex))
+    else if (currentIndex == targetIndex) TypedCons(elem, tail)
+    else this
+
+  override def headOption: Option[Element] = Some(_head)
+
+  override def lastOption: Option[Element] = _tail match {
+    case _: TypedNil.type => Some(_head)
+    case list: TypedCons[_, Element] => list.lastOption
+  }
 }
 
 /**

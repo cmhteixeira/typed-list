@@ -1,7 +1,7 @@
 package com.cmh.teixeira.typedlist
 
 import com.cmhteixeira.typedlist.{TypedCons, TypedList, TypedNil}
-import com.cmhteixeira.typedlist.naturalnumbers.Natural.{Nat1, Nat10, Nat11, Nat2, Nat3, Nat5, Nat4}
+import com.cmhteixeira.typedlist.naturalnumbers.Natural.{Nat1, Nat0, Nat10, Nat11, Nat2, Nat3, Nat5, Nat6, Nat4, Nat7}
 import org.scalacheck.Gen
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
@@ -119,4 +119,59 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
       TypedList.fromList[Nat4, Int](list) shouldBe None
     }
   }
+
+  test("Method 'lastOption' returns None for an empty list") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    forAll { list: TypedList[Nat1, Int] =>
+      list.tail.lastOption shouldBe None
+    }
+  }
+
+  test("Method 'lastOption' returns the last element of a non-empty list") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    forAll { (list: TypedList[Nat5, Int], someInt: Int) =>
+      (someInt :: list).reverse.lastOption shouldBe Some(someInt)
+    }
+  }
+
+  test("Method 'headOption' returns None for an empty list") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    forAll { (list: TypedList[Nat1, Int], someInt: Int) =>
+      (someInt :: list).headOption shouldBe Some(someInt)
+    }
+  }
+
+  test("It should be possible to update the head of an non-empty list") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    forAll { (list: TypedList[Nat5, Int], someInt: Int) =>
+      list.updated[Nat1, Int](someInt) shouldBe TypedCons(someInt, list.tail)
+    }
+  }
+
+  test("It should be possible to update the last element of an non-empty list") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    forAll { (list: TypedList[Nat5, Int], someInt: Int) =>
+      list.updated[Nat5, Int](someInt) shouldBe TypedCons(someInt, list.reverse.tail).reverse
+    }
+  }
+
+  test("Updating the element at an index and then 'getting' the element at that index should be consistent") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    forAll { (list: TypedList[Nat5, Int], someInt: Int) =>
+      list.updated[Nat3, Int](someInt).get[Nat3] shouldBe someInt
+    }
+  }
+
 }
