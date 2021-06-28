@@ -49,7 +49,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *
     *  @return The first element of this list.
     */
-  def head[PhantomType >: Size <: Suc[_ <: Natural]]: Element = _head
+  //Method is nilary instead of nullary to overcome Scala 2.x bug @ https://github.com/scala/bug/issues/12413.
+  def head[PhantomType >: Size <: Suc[_ <: Natural]](): Element = _head
 
   protected def _tail: TypedList[Size#Previous, Element]
 
@@ -57,7 +58,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *
     *  @return The rest of the list without its first element..
     */
-  def tail[PhantomType >: Size <: Suc[_ <: Natural]]: TypedList[Size#Previous, Element] = _tail
+  //Method is nilary instead of nullary to overcome Scala 2.x bug @ https://github.com/scala/bug/issues/12413.
+  def tail[PhantomType >: Size <: Suc[_ <: Natural]](): TypedList[Size#Previous, Element] = _tail
 
   /** Builds a new list by applying a function to all elements of this list.
     *
@@ -418,7 +420,8 @@ case class TypedCons[Size <: Natural, Element](
     }
   }
 
-  override def obtainElementAsString: Option[String] = Some(tail.obtainElementAsString.fold(s"$head")(s"$head, " + _))
+  override def obtainElementAsString: Option[String] =
+    Some(tail.obtainElementAsString.fold(s"$head")(s"$head, " + _))
 
   override def count(predicate: Element => Boolean): Int =
     if (predicate(head)) 1 + tail.count(predicate) else tail.count(predicate)
@@ -451,7 +454,7 @@ case class TypedCons[Size <: Natural, Element](
 
   override def lastOption: Option[Element] = _tail match {
     case _: TypedNil.type => Some(_head)
-    case list: TypedCons[_, Element] => list.lastOption
+    case list => list.lastOption
   }
 }
 
