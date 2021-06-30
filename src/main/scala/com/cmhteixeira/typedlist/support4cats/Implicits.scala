@@ -1,9 +1,10 @@
 package com.cmhteixeira.typedlist.support4cats
 
 import cats.{Applicative, Eval, Traverse}
+import com.cmhteixeira.typedlist.TypedList
 import com.cmhteixeira.typedlist.naturalnumbers.Natural
-import com.cmhteixeira.typedlist.naturalnumbers.Natural.Nat1
-import com.cmhteixeira.typedlist.{TypedCons, TypedList, TypedNil}
+
+import scala.util.control.TailCalls.done
 
 trait Implicits {
 
@@ -12,38 +13,39 @@ trait Implicits {
 
       override def traverse[G[_], A, B](fa: TypedList[Size, A])(f: A => G[B])(
           implicit evidence$1: Applicative[G]
-      ): G[TypedList[Size, B]] = fa match {
-        case TypedNil => evidence$1.pure(TypedNil)
-        case TypedCons(_head: A, _tail: TypedList[Size#Minus[Nat1], A]) =>
-          evidence$1.map2(f(_head), catsTraverseInstance.traverse(_tail)(f)) {
-            case (a, (b: TypedList[Size#Minus[Nat1], B])) => a :: b
-          }
-      }
+      ): G[TypedList[Size, B]] = fa.traverseHelper(a => done(f(a))).result
 
       override def foldLeft[A, B](fa: TypedList[Size, A], b: B)(f: (B, A) => B): B = {
-        val myApplicative: Applicative[Lambda[A => Function[B, B]]] =
-          new Applicative[Lambda[A => Function[B, B]]] {
-            override def pure[K](x: K): Function[B, B] = identity
+        implicit def myApplicative[P]: Applicative[Lambda[A => Function[Eval[P], Eval[P]]]] =
+          new Applicative[Lambda[A => Function[Eval[P], Eval[P]]]] {
+            override def pure[K](x: K): Function[Eval[P], Eval[P]] = identity
 
-            override def ap[K, L](ff: Function[B, B])(fa: Function[B, B]): Function[B, B] = b => fa(ff(b))
+            override def ap[K, L](
+                ff: Function[Eval[P], Eval[P]]
+            )(fa: Function[Eval[P], Eval[P]]): Function[Eval[P], Eval[P]] =
+              b => Eval.defer(fa(ff(b)))
           }
 
-        traverse[Lambda[A => Function[B, B]], A, B](fa)((a: A) => (b: B) => f(b, a))(myApplicative)(b)
+        fa.traverseHelperCats[Lambda[Y => Function[Eval[B], Eval[B]]], B](a =>
+            Eval.now((bRec: Eval[B]) => bRec.map(b => f(b, a)))
+          )
+          .flatMap(f => f(Eval.now(b)))
+          .value
       }
 
       override def foldRight[A, B](fa: TypedList[Size, A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
-        val myApplicative: Applicative[Lambda[A => Function[Eval[B], Eval[B]]]] =
-          new Applicative[Lambda[A => Function[Eval[B], Eval[B]]]] {
-            override def pure[K](x: K): Function[Eval[B], Eval[B]] = identity
+        implicit def myApplicative[P]: Applicative[Lambda[A => Function[Eval[P], Eval[P]]]] =
+          new Applicative[Lambda[A => Function[Eval[P], Eval[P]]]] {
+            override def pure[K](x: K): Function[Eval[P], Eval[P]] = identity
 
-            override def ap[K, L](ff: Function[Eval[B], Eval[B]])(
-                fa: Function[Eval[B], Eval[B]]
-            ): Function[Eval[B], Eval[B]] = b => ff(fa(b))
+            override def ap[K, L](
+                ff: Function[Eval[P], Eval[P]]
+            )(fa: Function[Eval[P], Eval[P]]): Function[Eval[P], Eval[P]] =
+              b => Eval.defer(ff(fa(b)))
           }
 
-        traverse[Lambda[A => Function[Eval[B], Eval[B]]], A, B](fa) { (a: A) => (b: Eval[B]) =>
-          f(a, b)
-        }(myApplicative)(lb)
+        fa.traverseHelperCats[Lambda[Y => Function[Eval[B], Eval[B]]], B](a => Eval.now((bRec: Eval[B]) => f(a, bRec)))
+          .flatMap(f => f(lb))
       }
 
     }

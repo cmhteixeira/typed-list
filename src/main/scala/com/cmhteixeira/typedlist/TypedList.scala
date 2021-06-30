@@ -1,8 +1,11 @@
 package com.cmhteixeira.typedlist
 
 import cats.data.NonEmptyList
+import cats.{Applicative, Eval}
 import com.cmhteixeira.typedlist.naturalnumbers.Natural.Nat1
 import com.cmhteixeira.typedlist.naturalnumbers.{LowerOrEqual, Natural, Suc, Zero}
+
+import scala.util.control.TailCalls.{TailRec, done, tailcall}
 
 /** A linked list with compile time size.
   *
@@ -272,6 +275,13 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *  @return The last element of this list if it is nonempty, `None` if it is empty.
     */
   def lastOption: Option[Element]
+
+  private[typedlist] def traverseHelper[G[_]: Applicative, B](
+      f: Element => TailRec[G[B]]
+  ): TailRec[G[TypedList[Size, B]]]
+
+  private[typedlist] def traverseHelperCats[G[_]: Applicative, B](f: Element => Eval[G[B]]): Eval[G[TypedList[Size, B]]]
+
 }
 
 case object TypedNil extends TypedList[Zero.type, Nothing] {
@@ -355,6 +365,16 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
   override def headOption: Option[Nothing] = None
 
   override def lastOption: Option[Nothing] = None
+
+  override private[typedlist] def traverseHelper[G[_]: Applicative, B](
+      f: Nothing => TailRec[G[B]]
+  ): TailRec[G[TypedList[Zero.type, B]]] =
+    done(Applicative[G].pure(this))
+
+  override private[typedlist] def traverseHelperCats[G[_]: Applicative, B](
+      f: Nothing => Eval[G[B]]
+  ): Eval[G[TypedList[Zero.type, B]]] =
+    Eval.now(Applicative[G].pure(this))
 }
 
 case class TypedCons[Size <: Natural, Element](
@@ -455,6 +475,23 @@ case class TypedCons[Size <: Natural, Element](
   override def lastOption: Option[Element] = _tail match {
     case _: TypedNil.type => Some(_head)
     case list => list.lastOption
+  }
+
+  override private[typedlist] def traverseHelper[G[_]: Applicative, B](
+      f: Element => TailRec[G[B]]
+  ): TailRec[G[TypedList[Suc[Size], B]]] =
+    for {
+      current <- f(_head)
+      rest <- tailcall(_tail.traverseHelper(f))
+    } yield Applicative[G].map2(current, rest)((i, xs) => i :: xs)
+
+  override private[typedlist] def traverseHelperCats[G[_]: Applicative, B](
+      f: Element => Eval[G[B]]
+  ): Eval[G[TypedList[Suc[Size], B]]] = {
+    for {
+      current <- f(_head)
+      rest <- Eval.defer(_tail.traverseHelperCats(f))
+    } yield Applicative[G].map2(current, rest)((i, xs) => i :: xs)
   }
 }
 
