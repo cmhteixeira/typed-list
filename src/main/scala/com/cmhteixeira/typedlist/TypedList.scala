@@ -73,7 +73,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *  @return A new list resulting from applying the given function `f`
     *          to each element of this list and collecting the results.
     */
-  def map[OtherType](f: Element => OtherType): TypedList[Size, OtherType]
+  def map[OtherType](f: Element => OtherType): TypedList[Size, OtherType] =
+    traverseHelper[Lambda[Y => Y], OtherType](a => done(f(a))).result
 
   /** Returns a new list formed from this list and list `that` by applying function `f` to the elements
     * of said lists at each position.
@@ -292,8 +293,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
   override protected def _tail: TypedList[Zero.type, Nothing] =
     throw new Exception("This exception will never be thrown since it is 'protected' by a phantom type.")
 
-  override def map[OtherType](f: Nothing => OtherType): TypedList[Zero.type, OtherType] = this
-
   override def zip[OtherType, C](
       that: TypedList[Zero.type, OtherType],
       f: (Nothing, OtherType) => C
@@ -381,9 +380,6 @@ case class TypedCons[Size <: Natural, Element](
     override protected val _head: Element,
     override protected val _tail: TypedList[Size, Element]
 ) extends TypedList[Suc[Size], Element] {
-
-  override def map[OtherType](f: Element => OtherType): TypedList[Suc[Size], OtherType] =
-    TypedCons(f(head), tail.map(f))
 
   override def zip[OtherType, C](
       that: TypedList[Suc[Size], OtherType],
