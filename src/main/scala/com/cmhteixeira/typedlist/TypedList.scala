@@ -210,7 +210,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *  @param elem  The element to test.
     *  @return `true` if this list has an element that is equal (as determined by `==`) to `elem`, `false` otherwise.
     */
-  def contains[A >: Element](elem: A): Boolean
+  final def contains[A >: Element](elem: A): Boolean =
+    foldLeft(false)((acc, newElem) => acc || elem == newElem)
 
   /** Counts the number of elements in the list which satisfy a predicate.
     *
@@ -356,8 +357,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
 
   override def count(predicate: Nothing => Boolean): Int = 0
 
-  override def contains[A >: Nothing](elem: A): Boolean = false
-
   override def toList: List[Nothing] = Nil
 
   override def collectFirst[B](p: PartialFunction[Nothing, B]): Option[B] = None
@@ -455,9 +454,6 @@ case class TypedCons[Size <: Natural, Element](
 
   override def count(predicate: Element => Boolean): Int =
     if (predicate(head)) 1 + tail.count(predicate) else tail.count(predicate)
-
-  override def contains[A >: Element](elem: A): Boolean =
-    head == elem || tail.contains(elem)
 
   override def toList: List[Element] = head +: tail.toList
 
