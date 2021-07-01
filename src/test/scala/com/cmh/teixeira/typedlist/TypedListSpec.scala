@@ -35,8 +35,20 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
   }
 
   test("Counting the elements that verify a predicate should be supported") {
-    val list4Elements = "Foo" :: "FooBar" :: "FooBaz" :: "FooQux" :: TypedNil
-    list4Elements.count(_.contains("Bar")) shouldBe 1
+    import org.scalacheck.Arbitrary.arbString
+    implicit val ev = arbString.arbitrary.suchThat(_.nonEmpty)
+    forAll { (list: TypedList[Nat10, String], prefix: String) =>
+      list.map(elem => s"$prefix$elem").count(_.contains(prefix)) shouldBe 10
+      list.map(elem => s"FooBar").count(_.contains(prefix)) shouldBe 0
+    }
+  }
+
+  test("Counting the elements that verify a predicate on an empty list should be zero") {
+    import org.scalacheck.Arbitrary.arbString
+    implicit val ev = arbString.arbitrary
+    forAll { (list: TypedList[Nat0, String], prefix: String) =>
+      list.map(elem => s"$prefix$elem").count(_.contains(prefix)) shouldBe 0
+    }
   }
 
   test("It should be possible to get an element by its index") {

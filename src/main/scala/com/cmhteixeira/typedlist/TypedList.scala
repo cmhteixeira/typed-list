@@ -218,7 +218,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *  @param predicate The predicate used to test elements.
     *  @return The number of elements satisfying the predicate `predicate`
     */
-  def count(predicate: Element => Boolean): Int
+  final def count(predicate: Element => Boolean): Int =
+    foldLeft(0)((acc, elem) => if (predicate(elem)) acc + 1 else acc)
 
   /** Transform this typed list into a standard library list.
     *
@@ -230,7 +231,7 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *
     *  @return The number of elements in this list.
     */
-  def size: Int = count(_ => true)
+  final def size: Int = count(_ => true)
 
   /** Finds the first element of the list for which the given partial
     * function is defined, and applies the partial function to it.
@@ -356,8 +357,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
 
   override def obtainElementAsString: Option[String] = None
 
-  override def count(predicate: Nothing => Boolean): Int = 0
-
   override def toList: List[Nothing] = Nil
 
   override def collectFirst[B](p: PartialFunction[Nothing, B]): Option[B] = None
@@ -450,9 +449,6 @@ case class TypedCons[Size <: Natural, Element](
 
   override def obtainElementAsString: Option[String] =
     Some(tail.obtainElementAsString.fold(s"$head")(s"$head, " + _))
-
-  override def count(predicate: Element => Boolean): Int =
-    if (predicate(head)) 1 + tail.count(predicate) else tail.count(predicate)
 
   override def toList: List[Element] = head +: tail.toList
 
