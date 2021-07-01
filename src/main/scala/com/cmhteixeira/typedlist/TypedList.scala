@@ -247,7 +247,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *  @return `true` if this this is empty or the given predicate `p` holds for all
     *          elements of this this, otherwise `false`.
     */
-  def forall(p: Element => Boolean): Boolean
+  final def forall(p: Element => Boolean): Boolean =
+    foldLeft(true)((acc, elem) => acc && p(elem))
 
   /** A copy of this list with one single replaced element.
     *
@@ -361,8 +362,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
 
   override def collectFirst[B](p: PartialFunction[Nothing, B]): Option[B] = None
 
-  override def forall(p: Nothing => Boolean): Boolean = true
-
   override def updated[Index <: Natural, B >: Nothing](elem: B)(
       implicit guaranteeIndexWithinBounds: LowerOrEqual[Index, Zero.type],
       index: Index
@@ -454,8 +453,6 @@ case class TypedCons[Size <: Natural, Element](
 
   override def collectFirst[B](p: PartialFunction[Element, B]): Option[B] =
     if (p.isDefinedAt(head)) Some(p(head)) else tail.collectFirst(p)
-
-  override def forall(p: Element => Boolean): Boolean = p(head) && tail.forall(p)
 
   override def updated[Index <: Natural, B >: Element](elem: B)(
       implicit guaranteeIndexWithinBounds: LowerOrEqual[Index, Suc[Size]],
