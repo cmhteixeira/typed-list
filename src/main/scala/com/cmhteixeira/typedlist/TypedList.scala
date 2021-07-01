@@ -527,14 +527,9 @@ object TypedList extends support4cats.Implicits {
 
   def empty[A]: TypedList[Zero.type, A] = TypedNil
 
-  def fromList[Size <: Natural, A](list: NonEmptyList[A])(
+  def fromList[Size <: Suc[_ <: Natural], A](list: NonEmptyList[A])(
       implicit t: TypedList[Size, Natural]
   ): Option[TypedList[Size, A]] = fromList(list.toList)
-
-  def fromElems[Size <: Natural, A](
-      elems: A*
-  )(implicit t: TypedList[Size, Natural]): Option[TypedList[Size, A]] =
-    fromList(elems.toList)
 
   def fromList[Size <: Natural, A](
       list: List[A]
