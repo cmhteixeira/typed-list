@@ -276,7 +276,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *
     *  @return The last element of this list if it is nonempty, `None` if it is empty.
     */
-  def lastOption: Option[Element]
+  final def lastOption: Option[Element] =
+    foldLeft[Option[Element]](None)((_, a) => Some(a))
 
   /** Applies a binary operator to a start value and all elements of this list,
     *  going left to right.
@@ -375,8 +376,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
   ): TypedList[Zero.type, B] = this
 
   override def headOption: Option[Nothing] = None
-
-  override def lastOption: Option[Nothing] = None
 
   override private[typedlist] def traverseHelper[G[_]: Applicative, B](
       f: Nothing => TailRec[G[B]]
@@ -478,11 +477,6 @@ case class TypedCons[Size <: Natural, Element](
 
   override def headOption: Option[Element] = Some(_head)
 
-  override def lastOption: Option[Element] = _tail match {
-    case _: TypedNil.type => Some(_head)
-    case list => list.lastOption
-  }
-
   override private[typedlist] def traverseHelper[G[_]: Applicative, B](
       f: Element => TailRec[G[B]]
   ): TailRec[G[TypedList[Suc[Size], B]]] =
@@ -514,7 +508,7 @@ case class TypedCons[Size <: Natural, Element](
 object TypedList extends support4cats.Implicits {
 
   @annotation.tailrec
-  // This is defined here instead of a normal method because of scala-compiler bug https://github.com/scala/bug/issues/9394
+  // This is defined here instead of a normal method because of a scala-compiler bug https://github.com/scala/bug/issues/9394
   private def foldLeft[Size <: Natural, Element, B](fa: TypedList[Size, Element], b: B)(f: (B, Element) => B): B =
     fa match {
       case TypedNil => b
