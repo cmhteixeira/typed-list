@@ -277,6 +277,20 @@ sealed trait TypedList[Size <: Natural, +Element] {
     */
   def lastOption: Option[Element]
 
+  /** Applies a binary operator to a start value and all elements of this list,
+    *  going left to right.
+    *
+    *  @param b The start value.
+    *  @param f The binary operator.
+    *  @tparam B The result type of the binary operator.
+    *  @return The result of inserting `f` between consecutive elements of this list,
+    *           going left to right with the start value `b` on the left:
+    *           `f(...f(b, x,,1,,), x,,2,,, ..., x,,n,,)` where `x,,1,,, ..., x,,n,,`
+    *            are the elements of this $coll.
+    *           Returns `b` if the list is empty.
+    */
+  final def foldLeft[B](b: B)(f: (B, Element) => B): B = TypedList.foldLeft(this, b)(f)
+
   private[typedlist] def traverseHelper[G[_]: Applicative, B](
       f: Element => TailRec[G[B]]
   ): TailRec[G[TypedList[Size, B]]]
@@ -502,6 +516,14 @@ case class TypedCons[Size <: Natural, Element](
   * }}}
   */
 object TypedList extends support4cats.Implicits {
+
+  @annotation.tailrec
+  // This is defined here instead of a normal method because of scala-compiler bug https://github.com/scala/bug/issues/9394
+  private def foldLeft[Size <: Natural, Element, B](fa: TypedList[Size, Element], b: B)(f: (B, Element) => B): B =
+    fa match {
+      case TypedNil => b
+      case TypedCons(_head, _tail) => foldLeft(_tail, f(b, _head))(f)
+    }
 
   def empty[A]: TypedList[Zero.type, A] = TypedNil
 
