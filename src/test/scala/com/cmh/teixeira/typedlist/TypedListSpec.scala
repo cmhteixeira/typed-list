@@ -29,6 +29,18 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
     } shouldBe Some("FooBar")
   }
 
+  test("For an empty list, .collectFirst should return None") {
+    val list1Element = "Foo" :: TypedNil
+    list1Element.tail.collectFirst(a => a) shouldBe None
+  }
+
+  test("If a non-empty list does no contain an element for which the partial function is defined, None is returned") {
+    val list4Elements = "Foo" :: "FooBar" :: "Baz" :: "Qux" :: TypedNil
+    list4Elements.collectFirst {
+      case a if a.length > 6 => a
+    } shouldBe None
+  }
+
   test("Determining if all the elements verify a predicate should be supported") {
     val list4Elements = "Foo" :: "FooBar" :: "FooBaz" :: "FooQux" :: TypedNil
     list4Elements.forall(_.contains("Foo")) shouldBe true
@@ -39,6 +51,13 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
     implicit val ev = arbString.arbitrary.suchThat(_.nonEmpty)
     forAll { (list: TypedList[Nat10, String], prefix: String) =>
       list.map(elem => s"$prefix$elem").count(_.contains(prefix)) shouldBe 10
+    }
+  }
+
+  test("If non of the elements verify the predicate, .count should return 0") {
+    import org.scalacheck.Arbitrary.arbString
+    implicit val ev = arbString.arbitrary.suchThat(_.nonEmpty) // non-empty part doesn't seem to be working
+    forAll { (list: TypedList[Nat10, String], prefix: String) =>
       list.map(elem => s"FooBar").count(_.contains(prefix)) shouldBe 0
     }
   }

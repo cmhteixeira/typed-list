@@ -242,7 +242,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *  @param p The partial function
     *  @return An option value containing `p` applied to the first value for which it is defined, or [[None]] if none exists.
     */
-  def collectFirst[B](p: PartialFunction[Element, B]): Option[B]
+  final def collectFirst[B](p: PartialFunction[Element, B]): Option[B] =
+    foldLeft[Option[B]](None)((acc, elem) => if (acc.isDefined) acc else p.lift(elem))
 
   /** Tests whether a predicate holds for all elements of this list.
     *
@@ -361,8 +362,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
 
   override def toList: List[Nothing] = Nil
 
-  override def collectFirst[B](p: PartialFunction[Nothing, B]): Option[B] = None
-
   override def updated[Index <: Natural, B >: Nothing](elem: B)(
       implicit guaranteeIndexWithinBounds: LowerOrEqual[Index, Zero.type],
       index: Index
@@ -449,9 +448,6 @@ case class TypedCons[Size <: Natural, Element](
     Some(tail.obtainElementAsString.fold(s"$head")(s"$head, " + _))
 
   override def toList: List[Element] = head +: tail.toList
-
-  override def collectFirst[B](p: PartialFunction[Element, B]): Option[B] =
-    if (p.isDefinedAt(head)) Some(p(head)) else tail.collectFirst(p)
 
   override def updated[Index <: Natural, B >: Element](elem: B)(
       implicit guaranteeIndexWithinBounds: LowerOrEqual[Index, Suc[Size]],
