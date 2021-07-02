@@ -177,7 +177,10 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *
     *  @return A new list with all elements of this list in reversed order.
     */
-  def reverse: TypedList[Size, Element]
+  // The type cast should be appropriate here
+  final def reverse: TypedList[Size, Element] =
+    foldLeft[TypedList[_ <: Natural, Element]](TypedNil)((acc, elem) => TypedCons(elem, acc))
+      .asInstanceOf[TypedList[Size, Element]]
 
   /** Splits the list into a prefix/suffix pair at a given position.
     *
@@ -341,8 +344,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
 
   override def ::[A1 >: Nothing](elem: A1): TypedList[Suc[Zero.type], A1] = TypedCons(elem, TypedNil)
 
-  override def reverse: TypedList[Zero.type, Nothing] = this
-
   override def split[At <: Suc[_ <: Natural]](
       implicit guaranteeIndexWithinBounds: LowerOrEqual[At, Zero.type],
       at: At,
@@ -423,8 +424,6 @@ case class TypedCons[Size <: Natural, Element](
       f: Element => TypedList[OtherSize, OtherType]
   ): TypedList[Size#Mult2[OtherSize]#Plus[OtherSize], OtherType] =
     tail._flatMap2Internal(f) concat f(head)
-
-  override def reverse: TypedList[Suc[Size], Element] = tail.reverse :+ head
 
   override def :+[A1 >: Element](elem: A1): TypedCons[Suc[Size], A1] = TypedCons(head, tail.:+(elem))
 
