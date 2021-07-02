@@ -204,9 +204,8 @@ sealed trait TypedList[Size <: Natural, +Element] {
 
   private[typedlist] def _get(goalIndex: Natural): Element
 
-  override final def toString: String = obtainElementAsString.fold("TypedList()")("TypedList(" + _ + ")")
-
-  def obtainElementAsString: Option[String]
+  override final def toString: String =
+    "TypedList(" + foldLeft("")((acc, elem) => s"$acc $elem,").dropRight(1).drop(1) + ")"
 
   /** Tests whether this list contains a given value as an element.
     *
@@ -358,8 +357,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
       "This exception will never be thrown for any manipulations the user might do. Also, it is not on the API so the user cannot call it directly."
     )
 
-  override def obtainElementAsString: Option[String] = None
-
   override def toList: List[Nothing] = Nil
 
   override def updated[Index <: Natural, B >: Nothing](elem: B)(
@@ -443,9 +440,6 @@ case class TypedCons[Size <: Natural, Element](
       tail._get(goalIndex.previous)
     }
   }
-
-  override def obtainElementAsString: Option[String] =
-    Some(tail.obtainElementAsString.fold(s"$head")(s"$head, " + _))
 
   override def toList: List[Element] = head +: tail.toList
 

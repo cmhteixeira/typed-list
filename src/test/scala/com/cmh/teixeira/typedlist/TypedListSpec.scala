@@ -205,4 +205,19 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
     }
   }
 
+  test("The string representation of an empty list is 'TypedList()'") {
+    (1 :: TypedNil).tail.toString shouldBe "TypedList()"
+  }
+
+  test(
+    "The string representation of an non-empty list is similar to the one for a standard list, but with prefix 'TypedList' instead of 'List'"
+  ) {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    forAll { typedList: TypedList[Nat11, Int] =>
+      typedList.toString.replace("TypedList", "List") shouldBe typedList.toList.toString()
+    }
+  }
+
 }
