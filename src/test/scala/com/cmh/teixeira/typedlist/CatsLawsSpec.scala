@@ -1,7 +1,7 @@
 package com.cmh.teixeira.typedlist
 
 import cats.Eq
-import cats.laws.discipline.{FoldableTests, FunctorTests, TraverseTests}
+import cats.laws.discipline.{FoldableTests, FunctorTests}
 import com.cmhteixeira.typedlist.TypedList
 import com.cmhteixeira.typedlist.naturalnumbers.Natural
 import com.cmhteixeira.typedlist.naturalnumbers.Natural._
@@ -18,14 +18,13 @@ class CatsLawsSpec
     with AnyFunSuiteLike
     with org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
     with Matchers {
-  type Size10Lists[A] = TypedList[Nat10, A]
   implicit val intGen: Gen[Int] = arbInt.arbitrary
   implicit val setGen = arbBitSet.arbitrary
   implicit def intGewn[A: Arbitrary] = arbOption[A].arbitrary
 
-  checkAll("TenElementList.FunctorLaws", FunctorTests[Size10Lists].functor[Int, Int, Int])
+  checkAll("TenElementList.FunctorLaws", FunctorTests[TypedList[Nat10, *]].functor[Int, Int, Int])
 
-  checkAll("TenElementList.FoldableLaws", FoldableTests[Size10Lists].foldable[Int, Int])
+  checkAll("TenElementList.FoldableLaws", FoldableTests[TypedList[Nat10, *]].foldable[Int, Int])
 }
 
 object CatsLawsSpec {
