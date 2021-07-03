@@ -418,24 +418,24 @@ case class TypedCons[Size <: Natural, Element](
       that: TypedList[Suc[Size], OtherType],
       f: (Element, OtherType) => C
   ): TypedList[Suc[Size], C] = that match {
-    case TypedCons(thatHead, thatTail) => TypedCons(f(head, thatHead), tail.zip(thatTail, f))
+    case TypedCons(thatHead, thatTail) => TypedCons(f(head(), thatHead), tail().zip(thatTail, f))
   }
 
   override def zip2[OtherType, C](
       that: TypedList[Suc[Size], OtherType],
       f: (Element, OtherType) => C
   ): TypedList[Suc[Size], C] =
-    TypedCons(f(head, that.head), tail.zip2(that.tail, f))
+    TypedCons(f(head(), that.head()), tail().zip2(that.tail(), f))
 
   override def concat[OtherType >: Element, OtherSize <: Natural](
       that: TypedList[OtherSize, OtherType]
   ): TypedList[Suc[Size#Plus[OtherSize]], OtherType] =
-    TypedCons(head, tail.concat(that))
+    TypedCons(head(), tail().concat(that))
 
   override def flatMap[OtherType, OtherSize <: Natural](
       f: Element => TypedList[OtherSize, OtherType]
   ): TypedList[OtherSize#Plus[Size#Mult[OtherSize]], OtherType] =
-    f(head) concat tail.flatMap(f)
+    f(head()) concat tail().flatMap(f)
 
   override def flatMap2[OtherType, OtherSize <: Natural](
       f: Element => TypedList[OtherSize, OtherType]
@@ -445,9 +445,9 @@ case class TypedCons[Size <: Natural, Element](
   override private[typedlist] def _flatMap2Internal[OtherSize <: Natural, OtherType](
       f: Element => TypedList[OtherSize, OtherType]
   ): TypedList[Size#Mult2[OtherSize]#Plus[OtherSize], OtherType] =
-    tail._flatMap2Internal(f) concat f(head)
+    tail()._flatMap2Internal(f) concat f(head())
 
-  override def :+[A1 >: Element](elem: A1): TypedCons[Suc[Size], A1] = TypedCons(head, tail.:+(elem))
+  override def :+[A1 >: Element](elem: A1): TypedCons[Suc[Size], A1] = TypedCons(head(), tail().:+(elem))
 
   override def ::[A1 >: Element](elem: A1): TypedList[Suc[Suc[Size]], A1] = TypedCons(elem, this)
 
@@ -461,9 +461,9 @@ case class TypedCons[Size <: Natural, Element](
 
   override private[typedlist] def _get(goalIndex: Natural): Element = {
     if (goalIndex == Suc(Zero)) {
-      head
+      head()
     } else {
-      tail._get(goalIndex.previous)
+      tail()._get(goalIndex.previous)
     }
   }
 
@@ -477,8 +477,8 @@ case class TypedCons[Size <: Natural, Element](
       currentIndex: Int,
       targetIndex: Int
   ): TypedList[Suc[Size], B] =
-    if (currentIndex < targetIndex) TypedCons(head, _tail.updatedHelper(elem, currentIndex + 1, targetIndex))
-    else if (currentIndex == targetIndex) TypedCons(elem, tail)
+    if (currentIndex < targetIndex) TypedCons(head(), _tail.updatedHelper(elem, currentIndex + 1, targetIndex))
+    else if (currentIndex == targetIndex) TypedCons(elem, tail())
     else this
 
   override def headOption: Option[Element] = Some(_head)

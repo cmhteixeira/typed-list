@@ -31,7 +31,7 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
 
   test("For an empty list, .collectFirst should return None") {
     val list1Element = "Foo" :: TypedNil
-    list1Element.tail.collectFirst(a => a) shouldBe None
+    list1Element.tail().collectFirst(a => a) shouldBe None
   }
 
   test("If a non-empty list does no contain an element for which the partial function is defined, None is returned") {
@@ -75,7 +75,7 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
   }
 
   test("An empty list should have size zero") {
-    (1 :: TypedNil).tail.size shouldBe 0
+    (1 :: TypedNil).tail().size shouldBe 0
   }
 
   test("A list with 3 elements should have size 3") {
@@ -156,7 +156,7 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
     implicit val ev = arbInt.arbitrary
 
     forAll { list: TypedList[Nat1, Int] =>
-      list.tail.lastOption shouldBe None
+      list.tail().lastOption shouldBe None
     }
   }
 
@@ -183,7 +183,7 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
     implicit val ev = arbInt.arbitrary
 
     forAll { (list: TypedList[Nat5, Int], someInt: Int) =>
-      list.updated[Nat1, Int](someInt) shouldBe TypedCons(someInt, list.tail)
+      list.updated[Nat1, Int](someInt) shouldBe TypedCons(someInt, list.tail())
     }
   }
 
@@ -192,7 +192,7 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
     implicit val ev = arbInt.arbitrary
 
     forAll { (list: TypedList[Nat5, Int], someInt: Int) =>
-      list.updated[Nat5, Int](someInt) shouldBe TypedCons(someInt, list.reverse.tail).reverse
+      list.updated[Nat5, Int](someInt) shouldBe TypedCons(someInt, list.reverse.tail()).reverse
     }
   }
 
@@ -206,7 +206,7 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
   }
 
   test("The string representation of an empty list is 'TypedList()'") {
-    (1 :: TypedNil).tail.toString shouldBe "TypedList()"
+    (1 :: TypedNil).tail().toString shouldBe "TypedList()"
   }
 
   test(
