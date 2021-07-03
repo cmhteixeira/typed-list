@@ -227,7 +227,7 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *
     * @return A new __normal__ list with the same elements as this list.
     */
-  def toList: List[Element]
+  final def toList: List[Element] = foldRight(List.empty[Element])((elem, acc) => elem :: acc)
 
   /** The size of this list.
     *
@@ -385,8 +385,6 @@ case object TypedNil extends TypedList[Zero.type, Nothing] {
       "This exception will never be thrown for any manipulations the user might do. Also, it is not on the API so the user cannot call it directly."
     )
 
-  override def toList: List[Nothing] = Nil
-
   override def updated[Index <: Natural, B >: Nothing](elem: B)(
       implicit guaranteeIndexWithinBounds: LowerOrEqual[Index, Zero.type],
       index: Index
@@ -468,8 +466,6 @@ case class TypedCons[Size <: Natural, Element](
       tail._get(goalIndex.previous)
     }
   }
-
-  override def toList: List[Element] = head +: tail.toList
 
   override def updated[Index <: Natural, B >: Element](elem: B)(
       implicit guaranteeIndexWithinBounds: LowerOrEqual[Index, Suc[Size]],
