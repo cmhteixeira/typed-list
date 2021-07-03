@@ -293,7 +293,7 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *  @return The result of inserting `f` between consecutive elements of this list,
     *           going left to right with the start value `b` on the left:
     *           `f(...f(b, x,,1,,), x,,2,,, ..., x,,n,,)` where `x,,1,,, ..., x,,n,,`
-    *            are the elements of this $coll.
+    *            are the elements of this list.
     *           Returns `b` if the list is empty.
     */
   final def foldLeft[B](b: B)(f: (B, Element) => B): B = TypedList.foldLeft(this, b)(f)
@@ -307,7 +307,7 @@ sealed trait TypedList[Size <: Natural, +Element] {
     *  @return The result of inserting `f` between consecutive elements of this list,
     *           going right to left with the start value `z` on the right:
     *           `f(x,,1,,, f(x,,2,,, ... f(x,,n,,, z)...))` where `x,,1,,, ..., x,,n,,`
-    *           are the elements of this $coll.
+    *           are the elements of this list.
     *           Returns `b` if this list is empty.
     */
   final def foldRight[B](b: B)(f: (Element, B) => B): B = {
