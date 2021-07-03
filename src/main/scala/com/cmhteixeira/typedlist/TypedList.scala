@@ -298,6 +298,34 @@ sealed trait TypedList[Size <: Natural, +Element] {
     */
   final def foldLeft[B](b: B)(f: (B, Element) => B): B = TypedList.foldLeft(this, b)(f)
 
+  /** Applies a binary operator to all elements of this list and a start value,
+    *  going right to left.
+    *
+    *  @param b The start value.
+    *  @param f The binary operator.
+    *  @tparam B The result type of the binary operator.
+    *  @return The result of inserting `f` between consecutive elements of this list,
+    *           going right to left with the start value `z` on the right:
+    *           `f(x,,1,,, f(x,,2,,, ... f(x,,n,,, z)...))` where `x,,1,,, ..., x,,n,,`
+    *           are the elements of this $coll.
+    *           Returns `b` if this list is empty.
+    */
+  final def foldRight[B](b: B)(f: (Element, B) => B): B = {
+    implicit def myApplicative[P]: Applicative[Lambda[A => Function[TailRec[P], TailRec[P]]]] =
+      new Applicative[Lambda[A => Function[TailRec[P], TailRec[P]]]] {
+        override def pure[K](x: K): Function[TailRec[P], TailRec[P]] = identity
+
+        override def ap[K, L](
+            ff: Function[TailRec[P], TailRec[P]]
+        )(fa: Function[TailRec[P], TailRec[P]]): Function[TailRec[P], TailRec[P]] =
+          b => tailcall(ff(fa(b)))
+      }
+
+    traverseHelper[Lambda[Y => Function[TailRec[B], TailRec[B]]], B](a =>
+      done((bRec: TailRec[B]) => bRec.map(b => f(a, b)))
+    ).flatMap(f => f(done(b))).result
+  }
+
   private[typedlist] def traverseHelper[G[_]: Applicative, B](
       f: Element => TailRec[G[B]]
   ): TailRec[G[TypedList[Size, B]]]

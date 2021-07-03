@@ -57,8 +57,8 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
   test("If non of the elements verify the predicate, .count should return 0") {
     import org.scalacheck.Arbitrary.arbString
     implicit val ev = arbString.arbitrary.suchThat(_.nonEmpty) // non-empty part doesn't seem to be working
-    forAll { (list: TypedList[Nat10, String], prefix: String) =>
-      list.map(elem => s"FooBar").count(_.contains(prefix)) shouldBe 0
+    forAll { (list: TypedList[Nat10, String]) =>
+      list.map(elem => s"FooBar").count(_.contains("FooBaz")) shouldBe 0
     }
   }
 
@@ -218,6 +218,35 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
     forAll { typedList: TypedList[Nat11, Int] =>
       typedList.toString.replace("TypedList", "List") shouldBe typedList.toList.toString()
     }
+  }
+
+  test("For associative operations, .foldLeft should be the same as .foldRight") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    forAll { typedList: TypedList[Nat11#Mult[Nat2], Int] =>
+      typedList.foldLeft(0)(_ + _) shouldBe typedList.foldRight(0)(_ + _)
+    }
+  }
+
+  test(".foldLeft gives the same result as .foldLeft on a standard list") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    val standardList = List("a", "b", "c", "d", "f", "g")
+    val list = TypedList.fromList[Nat6, String](standardList).get
+
+    list.foldLeft("")(_ + _) shouldBe standardList.foldLeft("")(_ + _)
+  }
+
+  test(".foldRight gives the same result as .foldRight on a standard list") {
+    import org.scalacheck.Arbitrary.arbInt
+    implicit val ev = arbInt.arbitrary
+
+    val standardList = List("a", "b", "c", "d", "f", "g")
+    val list = TypedList.fromList[Nat6, String](standardList).get
+
+    list.foldRight("")(_ + _) shouldBe standardList.foldRight("")(_ + _)
   }
 
 }
