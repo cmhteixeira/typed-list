@@ -513,7 +513,6 @@ case class TypedCons[Size <: Natural, Element](
   */
 object TypedList extends support4cats.Implicits {
 
-  @annotation.tailrec
   // This is defined here instead of a normal method because of a scala-compiler bug https://github.com/scala/bug/issues/9394
   private def foldLeft[Size <: Natural, Element, B](fa: TypedList[Size, Element], b: B)(f: (B, Element) => B): B =
     fa match {

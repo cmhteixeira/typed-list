@@ -14,8 +14,8 @@ ext {
     scalaTest = "3.0.9"
     catsCore = "2.0.0"
     kindProjectorPlugin = "0.13.0"
-    scalaTestPlusScalaCheck = "3.2.9.0"
-    disciplineScalaTest = "2.1.5"
+    scalaTestPlusScalaCheck = "3.2.2.0"
+    disciplineScalaTest = "2.1.1"
     flexMark = "0.35.10"
 }
 

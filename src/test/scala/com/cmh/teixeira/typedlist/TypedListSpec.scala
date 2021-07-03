@@ -31,7 +31,7 @@ class TypedListSpec extends AnyFunSuiteLike with Matchers with ScalaCheckPropert
 
   test("For an empty list, .collectFirst should return None") {
     val list1Element = "Foo" :: TypedNil
-    list1Element.tail().collectFirst(a => a) shouldBe None
+    list1Element.tail().collectFirst { case a => a } shouldBe None
   }
 
   test("If a non-empty list does no contain an element for which the partial function is defined, None is returned") {
