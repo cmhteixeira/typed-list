@@ -1,4 +1,4 @@
-# Typed List &emsp; [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.12) [![Build Status](https://www.travis-ci.com/cmhteixeira/typed-list.svg?branch=master)](https://www.travis-ci.com/cmhteixeira/typed-list)
+# Typed List &emsp; [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.cmhteixeira/typed-list_2.13) [![Build Status](https://www.travis-ci.com/cmhteixeira/typed-list.svg?branch=master)](https://www.travis-ci.com/cmhteixeira/typed-list)
 
 A linked list with compile time size.
 
@@ -124,5 +124,6 @@ The artefacts have been uploaded to Maven Central.
 
 | Library Version | Scala 2.11 | Scala 2.12 | Scala 2.13 |
 |---------|------------|------------|------------|
+| 2.0.0   | [![Maven Central](https://img.shields.io/maven-central/v/com.cmhteixeira/typed-list_2.11/2.0.0)](https://search.maven.org/artifact/com.cmhteixeira/typed-list_2.11/2.0.0/jar) | [![Maven Central](https://img.shields.io/maven-central/v/com.cmhteixeira/typed-list_2.12/2.0.0)](https://search.maven.org/artifact/com.cmhteixeira/typed-list_2.12/2.0.0/jar) | [![Maven Central](https://img.shields.io/maven-central/v/com.cmhteixeira/typed-list_2.13/2.0.0)](https://search.maven.org/artifact/com.cmhteixeira/typed-list_2.13/2.0.0/jar) |
 | 1.0.0   | | [![Maven Central](https://img.shields.io/maven-central/v/com.cmhteixeira/typed-list_2.12/1.0.0)](https://search.maven.org/artifact/com.cmhteixeira/typed-list_2.12/1.0.0/jar)        | |
 | 0.1   | | [![Maven Central](https://img.shields.io/maven-central/v/com.cmhteixeira/typed-list_2.12/0.1)](https://search.maven.org/artifact/com.cmhteixeira/typed-list_2.12/0.1/jar)        | |
